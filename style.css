@@ -1,11 +1,12 @@
 /* =============================================================================
    Personal Vault — style.css
    Dynamic Theming: Stealth IT Monospace (Default) -> Feminine Lilac/Rose (Unlocked)
+   Gamifikasi Dare Mode & Sistem Hukuman Savage Modal
    ============================================================================= */
 
-/* === 1. THEME VARIABLES === */
+/* === 1. CSS VARIABLES === */
 :root {
-  /* Stealth Mode (Neutral, Maskulin, IT Terminal Style) */
+  /* Stealth Mode (Netral, Maskulin, Terminal Style) */
   --bg-primary: #09090b;
   --bg-secondary: #121217;
   --bg-card: #181820;
@@ -21,8 +22,8 @@
   --text-secondary: #a1a1aa;
   --text-muted: #52525b;
   --success: #10b981;
-  --danger: #f43f5e;
-  --warning: #fbbf24;
+  --danger: #ef4444;
+  --warning: #f59e0b;
   --font-main: 'JetBrains Mono', 'SF Mono', Consolas, 'Courier New', monospace;
   --radius: 12px;
   --radius-sm: 8px;
@@ -31,7 +32,7 @@
   --header-h: 58px;
   --nav-h: 64px;
   --progress-h: 6px;
-  --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+  --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
 }
 
 /* Feminine Mode (Diaktifkan saat PIN Terbuka via body.feminine-theme) */
@@ -82,7 +83,7 @@ body {
   -webkit-font-smoothing: antialiased;
   user-select: none;
   -webkit-user-select: none;
-  transition: background-color 0.4s ease, color 0.4s ease;
+  transition: background-color 0.35s ease, color 0.35s ease;
 }
 
 .screen {
@@ -93,12 +94,11 @@ body {
   left: 0;
 }
 
-/* Custom Scrollbar */
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 4px; }
 
-/* === 3. STEALTH PIN LOCK SCREEN === */
+/* === 3. STEALTH LOCK SCREEN === */
 #pin-screen {
   display: flex;
   align-items: center;
@@ -203,7 +203,6 @@ body {
   30%, 60%, 90% { transform: translateX(8px); }
 }
 
-/* Numpad */
 .numpad {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -380,7 +379,13 @@ body {
   letter-spacing: -0.3px;
 }
 
-.panic-btn {
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.lock-manual-btn, .panic-btn {
   background: var(--bg-card);
   border: 1px solid var(--border);
   color: var(--text-secondary);
@@ -392,10 +397,10 @@ body {
   justify-content: center;
   cursor: pointer;
   position: relative;
-  font-size: 16px;
+  font-size: 15px;
   transition: all 0.2s;
 }
-.panic-btn:active { transform: scale(0.92); }
+.lock-manual-btn:active, .panic-btn:active { transform: scale(0.92); }
 
 .panic-pulse {
   position: absolute;
@@ -436,6 +441,21 @@ body {
   transition: opacity 0.2s;
 }
 .progress-wrap:hover .progress-text { opacity: 1; }
+
+/* Cooldown Banner (Hukuman 12 Jam) */
+.cooldown-banner {
+  background: linear-gradient(90deg, rgba(239, 68, 68, 0.2), rgba(239, 68, 68, 0.1));
+  border-bottom: 1px solid rgba(239, 68, 68, 0.4);
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  animation: fadeIn 0.3s ease;
+}
+.cooldown-icon { font-size: 18px; }
+.cooldown-info strong { display: block; font-size: 11px; color: #ef4444; letter-spacing: 0.5px; }
+.cooldown-info p { font-size: 11px; color: var(--text-secondary); margin-top: 1px; }
+#cooldown-countdown { font-weight: 800; color: #fca5a5; font-family: monospace; }
 
 /* Main Scroll Area */
 #app-main {
@@ -488,10 +508,7 @@ body {
   box-shadow: var(--card-shadow);
   transition: border-color 0.25s, box-shadow 0.25s;
 }
-
-.card:hover {
-  border-color: var(--border-accent);
-}
+.card:hover { border-color: var(--border-accent); }
 
 .form-title {
   font-size: 14px;
@@ -500,9 +517,7 @@ body {
   margin-bottom: 14px;
 }
 
-.form-row {
-  margin-bottom: 12px;
-}
+.form-row { margin-bottom: 12px; }
 
 .form-grid-2 {
   display: grid;
@@ -560,6 +575,7 @@ body {
   box-shadow: 0 4px 14px var(--accent-glow);
 }
 .btn-primary:active { transform: scale(0.98); }
+.btn-primary:disabled { opacity: 0.55; cursor: not-allowed; }
 
 .btn-secondary {
   padding: 11px 18px;
@@ -581,10 +597,7 @@ body {
   margin-top: 14px;
 }
 
-/* Collapse/Toggle Card */
-.collapse-card {
-  display: none;
-}
+.collapse-card { display: none; }
 .collapse-card.show {
   display: block;
   animation: slideDown 0.25s ease;
@@ -681,9 +694,7 @@ body {
   box-shadow: var(--card-shadow);
   transition: border-color 0.2s;
 }
-.category-card:hover {
-  border-color: var(--border-accent);
-}
+.category-card:hover { border-color: var(--border-accent); }
 
 .category-header {
   padding: 12px 14px;
@@ -734,7 +745,6 @@ body {
 }
 .btn-del-cat:hover, .btn-del-cat:active { color: var(--danger); }
 
-/* Category Items */
 .category-items {
   padding: 8px 12px;
   display: flex;
@@ -746,7 +756,7 @@ body {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 10px 10px;
+  padding: 10px;
   background: var(--bg-primary);
   border-radius: var(--radius-sm);
   border: 1px solid var(--border);
@@ -808,7 +818,6 @@ body {
   opacity: 1;
 }
 
-/* Category Add Item Row */
 .category-add-row {
   display: flex;
   gap: 8px;
@@ -838,10 +847,8 @@ body {
 }
 .btn-add-item:active { transform: scale(0.92); }
 
-/* === 8. WARDROBE GACHA & RNG PEMBALUT === */
-.gacha-card {
-  text-align: center;
-}
+/* === 8. WARDROBE GACHA & TEASING SYSTEM === */
+.gacha-card { text-align: center; }
 
 .gacha-mode-header {
   display: flex;
@@ -895,7 +902,6 @@ body {
   line-height: 1.4;
 }
 
-/* Gacha Display Slots Grid */
 .gacha-slots-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -976,7 +982,7 @@ body {
 .pembalut-label { font-size: 12px; font-weight: 700; color: var(--text-secondary); }
 
 .pembalut-status {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 800;
   padding: 4px 12px;
   border-radius: var(--radius-pill);
@@ -999,7 +1005,7 @@ body {
   border: 1px solid rgba(16, 185, 129, 0.3);
 }
 
-/* Teasing System Box */
+/* Teasing System Bubble */
 .teasing-box {
   margin-bottom: 14px;
   animation: popIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -1028,7 +1034,6 @@ body {
   line-height: 1.4;
 }
 
-/* Spin Button */
 .btn-spin {
   width: 100%;
   padding: 15px 20px;
@@ -1046,8 +1051,9 @@ body {
 }
 .btn-spin:active { transform: scale(0.97); }
 .btn-spin:disabled {
-  opacity: 0.6;
+  opacity: 0.5;
   cursor: not-allowed;
+  box-shadow: none;
 }
 .btn-spin.spinning-btn {
   animation: pulseSpin 0.35s infinite alternate;
@@ -1058,10 +1064,7 @@ body {
 }
 
 /* Wardrobe Inventory List */
-.filter-gender-group {
-  display: flex;
-  gap: 4px;
-}
+.filter-gender-group { display: flex; gap: 4px; }
 .filter-pill {
   padding: 4px 10px;
   background: var(--bg-card);
@@ -1130,10 +1133,7 @@ body {
   color: #f472b6;
   border: 1px solid rgba(244, 114, 182, 0.3);
 }
-.wardrobe-item-name {
-  font-size: 13px;
-  color: var(--text-primary);
-}
+.wardrobe-item-name { font-size: 13px; color: var(--text-primary); }
 .wardrobe-del-btn {
   background: none;
   border: none;
@@ -1144,17 +1144,366 @@ body {
 }
 .wardrobe-del-btn:active { color: var(--danger); }
 
-/* === 9. COMFORT & SIZE JOURNAL === */
+/* === 9. DARE MODE (GAMIFIKASI & TIMER ANTI-CURANG) === */
+.dare-profile-card {
+  padding: 14px 16px;
+  background: linear-gradient(135deg, var(--bg-secondary), var(--bg-card));
+  border: 1px solid var(--border-accent);
+}
+
+.profile-meta {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.points-badge, .title-badge {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--bg-primary);
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+}
+.pts-icon, .title-icon { font-size: 20px; }
+.pts-label, .title-label {
+  display: block;
+  font-size: 10px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+.pts-val {
+  font-size: 15px;
+  color: var(--warning);
+  font-weight: 800;
+}
+.title-val {
+  font-size: 14px;
+  color: var(--accent);
+  font-weight: 800;
+}
+
+/* Mood Selector */
+.mood-selector {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.mood-radio input { display: none; }
+.mood-pill {
+  display: block;
+  padding: 10px 14px;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.mood-radio input:checked + .mood-pill {
+  background: var(--bg-hover);
+  border-color: var(--accent);
+  color: var(--text-primary);
+  box-shadow: 0 0 12px var(--accent-glow);
+}
+
+.dare-info-box {
+  background: var(--bg-secondary);
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  margin-bottom: 14px;
+  color: var(--text-muted);
+  line-height: 1.45;
+}
+
+/* Active Dare Card */
+.dare-active-card {
+  border-color: var(--border-accent);
+  box-shadow: 0 0 24px var(--accent-glow);
+}
+
+.dare-active-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+.active-badge {
+  font-size: 10px;
+  background: var(--accent-gradient);
+  color: #fff;
+  padding: 3px 10px;
+  border-radius: var(--radius-pill);
+  font-weight: 800;
+  letter-spacing: 0.5px;
+}
+.reroll-tag {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-weight: 700;
+}
+
+.quest-display-box {
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 14px;
+  margin-bottom: 14px;
+}
+.quest-title {
+  font-size: 12px;
+  color: var(--accent);
+  text-transform: uppercase;
+  margin-bottom: 6px;
+  letter-spacing: 0.5px;
+}
+.quest-text {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.5;
+}
+
+/* Anti-Cheat Timer Display */
+.timer-display-box {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  text-align: center;
+  margin-bottom: 16px;
+}
+.timer-icon { font-size: 24px; margin-bottom: 4px; }
+.timer-clock {
+  font-size: 32px;
+  font-weight: 900;
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--accent);
+  letter-spacing: 2px;
+  text-shadow: 0 0 16px var(--accent-glow);
+}
+.timer-target {
+  display: block;
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+.dare-action-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.btn-reroll {
+  width: 100%;
+  padding: 11px;
+  background: var(--bg-input);
+  border: 1px solid var(--border-accent);
+  color: var(--text-primary);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-reroll:active { background: var(--bg-hover); }
+.btn-reroll:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.btn-claim-reward {
+  width: 100%;
+  padding: 13px;
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 4px 16px rgba(16, 185, 129, 0.3);
+}
+.btn-claim-reward:not(:disabled) {
+  animation: pulseClaim 1.5s infinite;
+}
+@keyframes pulseClaim {
+  0%, 100% { box-shadow: 0 0 10px rgba(16, 185, 129, 0.4); transform: scale(1); }
+  50% { box-shadow: 0 0 24px rgba(16, 185, 129, 0.7); transform: scale(1.02); }
+}
+.btn-claim-reward:disabled {
+  background: var(--bg-input);
+  color: var(--text-muted);
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+.btn-surrender {
+  width: 100%;
+  padding: 11px;
+  background: transparent;
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  color: var(--danger);
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-surrender:active { background: rgba(239, 68, 68, 0.15); }
+
+/* === 10. SAVAGE POPUP MODAL (HUKUMAN LAPIS 4) === */
+.savage-modal {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  z-index: 300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  animation: fadeIn 0.3s ease;
+}
+
+.savage-backdrop {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0, 0, 0, 0.88);
+  backdrop-filter: blur(8px);
+}
+
+.savage-card {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 440px;
+  background: #180d12;
+  border: 2px solid #ef4444;
+  border-radius: var(--radius);
+  padding: 24px 20px;
+  box-shadow: 0 0 40px rgba(239, 68, 68, 0.45);
+  text-align: center;
+  animation: savageShake 0.6s ease;
+}
+@keyframes savageShake {
+  0%, 100% { transform: scale(1) translateY(0); }
+  20%, 60% { transform: scale(1.03) translateY(-4px); }
+  40%, 80% { transform: scale(0.98) translateY(4px); }
+}
+
+.savage-icon-wrap { margin-bottom: 12px; }
+.savage-skull { font-size: 42px; display: block; margin-bottom: 6px; }
+.savage-badge-alert {
+  background: #ef4444;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 900;
+  padding: 3px 10px;
+  border-radius: var(--radius-pill);
+  letter-spacing: 1px;
+}
+
+.savage-title {
+  font-size: 20px;
+  font-weight: 900;
+  color: #ef4444;
+  margin-bottom: 8px;
+  letter-spacing: 0.5px;
+}
+
+.savage-mockery {
+  font-size: 14px;
+  font-style: italic;
+  font-weight: 700;
+  color: #fca5a5;
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px dashed rgba(239, 68, 68, 0.35);
+  padding: 12px;
+  border-radius: var(--radius-sm);
+  margin-bottom: 16px;
+  line-height: 1.45;
+}
+
+.savage-consequences {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  text-align: left;
+  margin-bottom: 20px;
+}
+
+.consequence-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 8px 10px;
+  background: rgba(0, 0, 0, 0.35);
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+.cq-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+.consequence-item strong { display: block; font-size: 12px; color: #fecaca; }
+.consequence-item small { font-size: 11px; color: #a1a1aa; line-height: 1.3; }
+
+/* Long Press 3-Second Button */
+.longpress-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-longpress {
+  position: relative;
+  width: 100%;
+  padding: 14px;
+  background: #2b1216;
+  border: 1px solid #ef4444;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  overflow: hidden;
+  font-family: inherit;
+}
+
+.longpress-bar {
+  position: absolute;
+  top: 0; left: 0; bottom: 0;
+  width: 0%;
+  background: #ef4444;
+  transition: width 0.05s linear;
+  opacity: 0.85;
+}
+.longpress-bar.filling {
+  transition: width 3s linear;
+  width: 100%;
+}
+
+.longpress-text {
+  position: relative;
+  z-index: 2;
+  font-size: 13px;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: 0.3px;
+}
+
+.longpress-hint {
+  font-size: 10px;
+  color: #a1a1aa;
+}
+
+/* === 11. COMFORT JOURNAL === */
 .rating-selection-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 6px 0;
 }
-.star-rating {
-  display: flex;
-  gap: 4px;
-}
+.star-rating { display: flex; gap: 4px; }
 .star {
   font-size: 26px;
   color: var(--text-muted);
@@ -1242,12 +1591,10 @@ body {
   text-align: right;
 }
 
-/* === 10. BOTTOM NAVIGATION === */
+/* === 12. BOTTOM NAVIGATION === */
 .bottom-nav {
   position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
+  bottom: 0; left: 0; right: 0;
   height: var(--nav-h);
   background: var(--bg-secondary);
   border-top: 1px solid var(--border);
@@ -1270,22 +1617,20 @@ body {
   font-size: 11px;
   font-weight: 700;
   cursor: pointer;
-  padding: 6px 16px;
+  padding: 6px 14px;
   border-radius: var(--radius-sm);
   transition: all 0.2s;
   font-family: inherit;
 }
 .nav-btn svg { stroke: var(--text-muted); transition: stroke 0.2s; }
 
-.nav-btn.active {
-  color: var(--accent);
-}
+.nav-btn.active { color: var(--accent); }
 .nav-btn.active svg {
   stroke: var(--accent);
   filter: drop-shadow(0 0 6px var(--accent-glow));
 }
 
-/* === 11. TOAST NOTIFICATION === */
+/* === 13. TOAST POPUP === */
 .toast {
   position: fixed;
   bottom: calc(var(--nav-h) + var(--safe-bottom) + 16px);
@@ -1299,7 +1644,7 @@ body {
   font-weight: 600;
   border: 1px solid var(--border-accent);
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
-  z-index: 200;
+  z-index: 400;
   opacity: 0;
   pointer-events: none;
   transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -1321,7 +1666,7 @@ body {
   font-style: italic;
 }
 
-/* Responsive Large Screens */
+/* Responsive Desktop Screen */
 @media (min-width: 600px) {
   .journal-cards-container {
     display: grid;

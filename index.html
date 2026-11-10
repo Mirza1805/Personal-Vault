@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#09090b">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="description" content="Personal Vault - Private Utility & Wardrobe Management">
+  <meta name="description" content="Personal Vault - Private Utility, Wardrobe Randomizer & Gamified Dare Tracker">
   <title>Personal Vault</title>
   <link rel="manifest" href="manifest.json">
   <link rel="stylesheet" href="style.css">
@@ -14,7 +14,7 @@
 <body>
 
   <!-- ============================================ -->
-  <!-- 1. STEALTH PIN LOCK SCREEN (NETRAL / IT TOOL)-->
+  <!-- 1. STEALTH LOCK SCREEN (NETRAL / IT TERMINAL)-->
   <!-- ============================================ -->
   <div id="pin-screen" class="screen">
     <div class="pin-terminal">
@@ -22,17 +22,17 @@
         <span class="terminal-dot red"></span>
         <span class="terminal-dot yellow"></span>
         <span class="terminal-dot green"></span>
-        <span class="terminal-title">AUTH_GATEWAY // v2.4</span>
+        <span class="terminal-title">AUTH_GATEWAY // v2.5</span>
       </div>
 
       <div class="terminal-body">
         <div class="terminal-prompt">
           <span class="prompt-user">user@vault</span>:<span class="prompt-path">~#</span>
-          <span class="prompt-action">enter-passcode</span>
+          <span class="prompt-action">verify-identity</span>
         </div>
-        <p class="pin-subtitle">SYSTEM RESTRICTED • ENTER 4-DIGIT PIN</p>
+        <p class="pin-subtitle">SYSTEM SECURED • ENTER 4-DIGIT PASSCODE</p>
 
-        <!-- PIN Dots Indicator -->
+        <!-- Indicator Bulatan PIN -->
         <div class="pin-dots" id="pin-dots">
           <span class="dot"></span>
           <span class="dot"></span>
@@ -62,7 +62,7 @@
             </svg>
           </button>
         </div>
-        <div class="stealth-footer">TERMINAL ID: 0x7E3A • ENCRYPTED STORAGE</div>
+        <div class="stealth-footer">STORAGE: ENCRYPTED • AUTO-LOCK: 3 MIN</div>
       </div>
     </div>
   </div>
@@ -131,18 +131,11 @@
           <small>Assigned: Low Priority</small>
         </div>
       </div>
-      <div class="camo-item">
-        <span class="camo-check">⏳</span>
-        <div class="camo-text">
-          <strong>Implement automated rollback in CI/CD pipeline</strong>
-          <small>Under Review</small>
-        </div>
-      </div>
     </div>
   </div>
 
   <!-- ============================================ -->
-  <!-- 3. MAIN APP (DYNAMIC THEME: FEMININE / ELEGANT)-->
+  <!-- 3. MAIN APP (DYNAMIC FEMININE THEME)         -->
   <!-- ============================================ -->
   <div id="main-app" class="screen" style="display: none;">
 
@@ -153,10 +146,13 @@
           <span class="vault-symbol">🔒</span>
           <h1>Personal Vault</h1>
         </div>
-        <button id="panic-indicator" class="panic-btn" title="Double tap header to camouflage" aria-label="Panic switch">
-          <span class="panic-pulse"></span>
-          🛡️
-        </button>
+        <div class="header-actions">
+          <button id="btn-lock-manual" class="lock-manual-btn" title="Kunci Sekarang" aria-label="Lock app">🔐</button>
+          <button id="panic-indicator" class="panic-btn" title="Double tap header to camouflage" aria-label="Panic switch">
+            <span class="panic-pulse"></span>
+            🛡️
+          </button>
+        </div>
       </div>
     </header>
 
@@ -164,6 +160,15 @@
     <div class="progress-wrap" id="progress-wrap">
       <div class="progress-bar" id="progress-bar"></div>
       <span class="progress-text" id="progress-text">0%</span>
+    </div>
+
+    <!-- Cooldown Warning Banner (Muncul jika sedang dihukum 12 jam) -->
+    <div id="cooldown-banner" class="cooldown-banner" style="display: none;">
+      <span class="cooldown-icon">⛔</span>
+      <div class="cooldown-info">
+        <strong>COOLDOWN HUKUMAN NYERAH AKTIF</strong>
+        <p>Gacha & Dare di-lock selama: <span id="cooldown-countdown">--:--:--</span></p>
+      </div>
     </div>
 
     <!-- Main Scrollable Area -->
@@ -176,7 +181,7 @@
         <div class="tab-header-row">
           <div>
             <h2 class="tab-heading">My Checklist</h2>
-            <p class="tab-sub">Kelola tugas harian, belanjaan & aktivitas</p>
+            <p class="tab-sub">Tugas harian, weekend & kebutuhan belanja</p>
           </div>
           <button class="btn-create-category" id="btn-toggle-cat-form">+ Kategori</button>
         </div>
@@ -185,7 +190,7 @@
         <div id="new-category-box" class="card form-card collapse-card">
           <h3 class="form-title">✨ Buat Kategori Baru</h3>
           <div class="form-row">
-            <input type="text" id="input-cat-name" class="input-field" placeholder="Nama Kategori (mis: Belanja Bulanan, Tugas Kuliah)..." maxlength="50">
+            <input type="text" id="input-cat-name" class="input-field" placeholder="Nama Kategori (mis: Perawatan Diri, Wishlist)..." maxlength="50">
           </div>
           <div class="form-row checkbox-row">
             <label class="custom-toggle">
@@ -193,8 +198,8 @@
               <span class="toggle-slider"></span>
             </label>
             <div class="toggle-label-group">
-              <strong>Kategori Daily (Auto-Reset Harian)</strong>
-              <small>Centang semua tugas di kategori ini akan otomatis kembali kosong saat lewat 00:00 tengah malam.</small>
+              <strong>Kategori Daily (Auto-Reset)</strong>
+              <small>Semua tugas di kategori ini akan otomatis di-uncheck saat pergantian hari (00:00).</small>
             </div>
           </div>
           <div class="form-actions">
@@ -208,13 +213,13 @@
       </section>
 
       <!-- ======================================== -->
-      <!-- TAB 2: WARDROBE GACHA & RNG PEMBALUT     -->
+      <!-- TAB 2: WARDROBE GACHA & TEASING SYSTEM   -->
       <!-- ======================================== -->
       <section id="tab-wardrobe" class="tab-content">
         <div class="tab-header-row">
           <div>
-            <h2 class="tab-heading">Wardrobe & Gacha</h2>
-            <p class="tab-sub">Randomizer outfit harian & koleksi pakaian rahasia</p>
+            <h2 class="tab-heading">Wardrobe Gacha</h2>
+            <p class="tab-sub">Acak pakaian rahasia & status pembalut</p>
           </div>
         </div>
 
@@ -225,7 +230,7 @@
             <div class="mode-selector">
               <label class="mode-radio">
                 <input type="radio" name="gacha-mode" value="cowok" checked>
-                <span class="radio-pill">🕶️ Full Cowok</span>
+                <span class="radio-pill">🕶️ Mode Cowok</span>
               </label>
               <label class="mode-radio">
                 <input type="radio" name="gacha-mode" value="mix">
@@ -238,7 +243,7 @@
             Mode Cowok: Hanya mengacak pakaian cowok. Kerudung & pembalut dinonaktifkan.
           </div>
 
-          <!-- Gacha Display Slots -->
+          <!-- Gacha Display Slots Grid -->
           <div class="gacha-slots-grid">
             <div class="slot-box" id="slot-top">
               <span class="slot-tag">👕 Top</span>
@@ -254,15 +259,15 @@
             </div>
             <div class="slot-box" id="slot-kerudung">
               <span class="slot-tag">🧕 Kerudung</span>
-              <span class="slot-text" id="slot-val-kerudung">—</span>
+              <span class="slot-text" id="slot-val-kerudung">— (Off)</span>
             </div>
           </div>
 
-          <!-- RNG Pembalut Result (Hanya tampil di Mode Mix/Feminim) -->
+          <!-- Status Pembalut (Khusus Mode Mix/Feminim) -->
           <div class="pembalut-box" id="pembalut-box" style="display: none;">
             <div class="pembalut-header">
               <span class="pembalut-icon">🩸</span>
-              <span class="pembalut-label">RNG Status Pembalut:</span>
+              <span class="pembalut-label">Status Pembalut:</span>
             </div>
             <div class="pembalut-status" id="pembalut-status">—</div>
           </div>
@@ -285,7 +290,7 @@
         <div class="card form-card">
           <h3 class="form-title">➕ Tambah Pakaian ke Lemari</h3>
           <div class="form-row">
-            <input type="text" id="wardrobe-name" class="input-field" placeholder="Nama pakaian (mis: Kaos Oversize, Rok Plisket, Boxer)..." maxlength="60">
+            <input type="text" id="wardrobe-name" class="input-field" placeholder="Nama pakaian (mis: Rok Plisket, Boxer Seamless, Daster)..." maxlength="60">
           </div>
           <div class="form-grid-2">
             <div>
@@ -323,13 +328,120 @@
       </section>
 
       <!-- ======================================== -->
-      <!-- TAB 3: COMFORT & SIZE JOURNAL            -->
+      <!-- TAB 3: DARE MODE (GAMIFIKASI & TIMER)    -->
+      <!-- ======================================== -->
+      <section id="tab-dare" class="tab-content">
+        <div class="tab-header-row">
+          <div>
+            <h2 class="tab-heading">Dare Mode</h2>
+            <p class="tab-sub">Tantangan outfit & gamifikasi kedisiplinan</p>
+          </div>
+        </div>
+
+        <!-- Profile Gamifikasi (Poin & Title) -->
+        <div class="card dare-profile-card">
+          <div class="profile-meta">
+            <div class="points-badge">
+              <span class="pts-icon">⭐</span>
+              <div>
+                <span class="pts-label">Vault Points</span>
+                <strong class="pts-val" id="user-points">100 Pts</strong>
+              </div>
+            </div>
+            <div class="title-badge">
+              <span class="title-icon">👑</span>
+              <div>
+                <span class="title-label">Gelar User</span>
+                <strong class="title-val" id="user-title">Brave Girl</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Panel Generator Tantangan Baru (Jika tidak ada tantangan aktif) -->
+        <div id="dare-setup-card" class="card form-card">
+          <h3 class="form-title">🎯 Mulai Tantangan Baru</h3>
+
+          <!-- Pemilihan Mood Aktivitas -->
+          <div class="form-row">
+            <label class="field-label">1. Pilih Kategori Mood / Aktivitas:</label>
+            <div class="mood-selector">
+              <label class="mood-radio">
+                <input type="radio" name="dare-mood" value="santai" checked>
+                <span class="mood-pill">🛋️ Santai</span>
+              </label>
+              <label class="mood-radio">
+                <input type="radio" name="dare-mood" value="produktif">
+                <span class="mood-pill">⚡ Produktif</span>
+              </label>
+              <label class="mood-radio">
+                <input type="radio" name="dare-mood" value="ekstrem">
+                <span class="mood-pill">🔮 Kustom / Ekstrem</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Pemilihan Durasi -->
+          <div class="form-row">
+            <label class="field-label">2. Pilih Durasi Tantangan:</label>
+            <select id="dare-duration" class="input-field">
+              <option value="15">⏱️ 15 Menit (Cepat & Ringan)</option>
+              <option value="30" selected>⏱️ 30 Menit (Standar)</option>
+              <option value="45">⏱️ 45 Menit (Menantang)</option>
+              <option value="60">⏱️ 60 Menit (Uji Nyali Penuh)</option>
+            </select>
+          </div>
+
+          <div class="dare-info-box">
+            <small>⚠️ <strong>Aturan Anti-Curang:</strong> Begitu tantangan dimulai, timer akan berjalan terus meski browser ditutup. Jika menyerah, Anda akan terkena <strong>Sistem Hukuman Lapis Empat</strong>!</small>
+          </div>
+
+          <button class="btn-primary" id="btn-start-dare">⚔️ Mulai Tantangan Sekarang</button>
+        </div>
+
+        <!-- Panel Tantangan Aktif (Timer & Actions) -->
+        <div id="dare-active-card" class="card dare-active-card" style="display: none;">
+          <div class="dare-active-header">
+            <span class="active-badge">TANTANGAN SEDANG BERLANGSUNG</span>
+            <span class="reroll-tag" id="reroll-remaining-tag">Reroll: 3/3</span>
+          </div>
+
+          <!-- Deskripsi Quest -->
+          <div class="quest-display-box">
+            <h4 class="quest-title">🔥 Quest Anda:</h4>
+            <p class="quest-text" id="quest-description">Pakai [Outfit] selama [Durasi] sambil [Aktivitas]...</p>
+          </div>
+
+          <!-- Anti-Cheat Timer Display -->
+          <div class="timer-display-box">
+            <div class="timer-icon">⏳</div>
+            <div class="timer-clock" id="timer-clock">00:00:00</div>
+            <span class="timer-target" id="timer-target-label">Target selesai: --:--</span>
+          </div>
+
+          <!-- Tombol Aksi Dare -->
+          <div class="dare-action-buttons">
+            <button class="btn-reroll" id="btn-reroll-dare" title="Kocok ulang aktivitas (Maks 3x sehari)">
+              🎲 Reroll Aktivitas (<span id="reroll-count-btn">3</span>x)
+            </button>
+            <button class="btn-claim-reward" id="btn-claim-reward" disabled>
+              🎉 Selesai & Klaim Poin (+50)
+            </button>
+            <button class="btn-surrender" id="btn-surrender-dare">
+              🏳️ Nyerah (Kena Hukuman)
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================================== -->
+      <!-- TAB 4: COMFORT & SIZE JOURNAL            -->
       <!-- ======================================== -->
       <section id="tab-journal" class="tab-content">
         <div class="tab-header-row">
           <div>
-            <h2 class="tab-heading">Comfort & Size Journal</h2>
-            <p class="tab-sub">Catat detail ukuran, merk, & impresi kenyamanan pemakaian</p>
+            <h2 class="tab-heading">Comfort Journal</h2>
+            <p class="tab-sub">Catat ukuran, kenyamanan, & rasa pemakaian</p>
           </div>
         </div>
 
@@ -341,27 +453,23 @@
           </div>
           <div class="form-grid-2">
             <div>
-              <label class="field-label">Merk / Brand:</label>
-              <input type="text" id="journal-brand" class="input-field" placeholder="mis: Uniqlo, Zara, No Brand..." maxlength="40">
+              <label class="field-label">Ukuran:</label>
+              <input type="text" id="journal-size" class="input-field" placeholder="mis: S, M, L, XL, 32..." maxlength="20">
             </div>
             <div>
-              <label class="field-label">Ukuran:</label>
-              <input type="text" id="journal-size" class="input-field" placeholder="mis: M, L, 32, Free Size..." maxlength="20">
-            </div>
-          </div>
-          <div class="form-row rating-selection-row">
-            <label class="field-label">Rating Kenyamanan:</label>
-            <div class="star-rating" id="star-rating">
-              <span class="star" data-val="1">★</span>
-              <span class="star" data-val="2">★</span>
-              <span class="star" data-val="3">★</span>
-              <span class="star" data-val="4">★</span>
-              <span class="star" data-val="5">★</span>
+              <label class="field-label">Rating Kenyamanan:</label>
+              <div class="star-rating" id="star-rating">
+                <span class="star" data-val="1">★</span>
+                <span class="star" data-val="2">★</span>
+                <span class="star" data-val="3">★</span>
+                <span class="star" data-val="4">★</span>
+                <span class="star" data-val="5">★</span>
+              </div>
             </div>
           </div>
           <div class="form-row">
-            <label class="field-label">Catatan Bahan & Rasa Pakai:</label>
-            <textarea id="journal-notes" class="input-field textarea" placeholder="Ceritakan bagaimana bahan menyentuh kulit, elastisitas karet, rasa pas saat dipakai seharian..." rows="3" maxlength="400"></textarea>
+            <label class="field-label">Catatan Khusus (Bahan, Karet, Sensasi Pakai):</label>
+            <textarea id="journal-notes" class="input-field textarea" placeholder="Ceritakan bagaimana bahan menyentuh kulit, tingkat elastisitas, rasa pas saat dipakai beraktivitas..." rows="3" maxlength="400"></textarea>
           </div>
           <button class="btn-primary" id="btn-save-journal">Simpan ke Jurnal</button>
         </div>
@@ -375,7 +483,7 @@
 
     </main>
 
-    <!-- Bottom Navigation -->
+    <!-- Bottom Navigation Bar (4 Tab) -->
     <nav class="bottom-nav" id="bottom-nav">
       <button class="nav-btn active" data-tab="tasks">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -389,6 +497,12 @@
         </svg>
         <span>Gacha</span>
       </button>
+      <button class="nav-btn" data-tab="dare">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+        </svg>
+        <span>Dare</span>
+      </button>
       <button class="nav-btn" data-tab="journal">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
@@ -399,7 +513,56 @@
 
   </div>
 
-  <!-- Toast Notification Pop-up -->
+  <!-- ============================================ -->
+  <!-- 4. SAVAGE POPUP MODAL (HUKUMAN NYERAH)       -->
+  <!-- ============================================ -->
+  <div id="savage-modal" class="savage-modal" style="display: none;">
+    <div class="savage-backdrop"></div>
+    <div class="savage-card">
+      <div class="savage-icon-wrap">
+        <span class="savage-skull">💀</span>
+        <span class="savage-badge-alert">PENALTI LAPIS EMPAT AKTIF</span>
+      </div>
+
+      <h3 class="savage-title">KAMU MENYERAH!</h3>
+      <p class="savage-mockery" id="savage-mockery-text">"Yahh cupu banget, baru segini doang udah nyerah & ciut nyalinya? Hahaha!"</p>
+
+      <div class="savage-consequences">
+        <div class="consequence-item">
+          <span class="cq-icon">🔻</span>
+          <div>
+            <strong>Poin & Gelar Turun</strong>
+            <small>-50 Poin dan penurunan tingkatan title kehormatan.</small>
+          </div>
+        </div>
+        <div class="consequence-item">
+          <span class="cq-icon">⏳</span>
+          <div>
+            <strong>Cooldown 12 Jam</strong>
+            <small>Gacha & Dare di-lock selama 12 jam ke depan.</small>
+          </div>
+        </div>
+        <div class="consequence-item">
+          <span class="cq-icon">🚨</span>
+          <div>
+            <strong>Penalti Silang Checklist</strong>
+            <small>1 Tugas hukuman baru telah disuntikkan ke Checklist Daily Anda.</small>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tombol Long Press 3 Detik untuk Tutup Modal -->
+      <div class="longpress-container">
+        <button id="btn-longpress-dismiss" class="btn-longpress">
+          <div class="longpress-bar" id="longpress-bar"></div>
+          <span class="longpress-text">Tahan 3 Detik untuk Mengakui Kekalahan</span>
+        </button>
+        <small class="longpress-hint">Tekan & jangan lepas selama 3 detik untuk menutup</small>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Pop-up Notification -->
   <div id="toast" class="toast"></div>
 
   <script src="app.js"></script>
