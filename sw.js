@@ -3,7 +3,7 @@
 // Progressive Web App Offline Caching (Cache-First dengan Network Fallback)
 // =============================================================================
 
-const CACHE_NAME = 'personal-vault-v2';
+const CACHE_NAME = 'personal-vault-v3';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -21,7 +21,7 @@ self.addEventListener('install', (event) => {
   );
 });
 
-// Event: Activate - Hapus cache versi lama
+// Event: Activate - Hapus cache versi lama secara otomatis
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keyList) => {
@@ -36,7 +36,7 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// Event: Fetch - Sajikan dari cache lebih dulu jika tersedia
+// Event: Fetch - Strategi Cache-First dengan fallback network
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
 
