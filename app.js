@@ -104,52 +104,180 @@ const DEFAULT_WARDROBE = [
   { id: 'k3', name: 'Bergo Instan Hitam Adem', category: 'kerudung', gender: 'Cewek' }
 ];
 
-// 5 Contoh Kalimat Godaan Genit / Lucu (Teasing Text System)
+// =========================================================================
+// 1. TEASING PHRASES (Kata-kata Godaan Genit - 20 Variasi)
+// =========================================================================
 const TEASING_PHRASES = [
   "Ciee dandan cantik hari ini hihihi~",
   "Jangan lupa pembalutnya dipakai yang rapi ya manis~",
   "Pasti gemes banget nih pakai daleman itu!",
   "Awas ya kalau senyum-senyum sendiri di depan cermin~",
-  "Ssst... rahasia kecil kita ya! Penampilan hari ini anggun banget~"
+  "Ssst... rahasia kecil kita ya! Penampilan hari ini anggun banget~",
+  "Duh, yang lagi ngerasa cantik malam ini, jangan lupa di-foto ya!",
+  "Cocok banget tau pakai itu, auranya langsung beda hihihi.",
+  "Hati-hati ketagihan nyaman ya pakai yang begituan~",
+  "Udah siap jadi cewek manis di kamar doang nih?",
+  "Lucu banget sih, coba deh puter badan di depan kaca sekali~",
+  "Wah, pacarnya tau nggak nih kamu selucu ini di kosan? hihihi.",
+  "Dalemannya pas banget kan? Emang paling ngerti deh selera kamu~",
+  "Jangan tegang gitu dong, nikmatin aja sisi lembut kamu hari ini.",
+  "Ciee yang lagi eksplorasi gaya, cantik kok, beneran deh!",
+  "Awas talinya melorot ya manis, benerin dulu gih~",
+  "Sensasinya beda kan? Lebih adem atau malah bikin deg-degan nih?",
+  "Duh, perpaduan warnanya gemes banget, pinter juga kamu mix and match!",
+  "Kalau ada yang ngetok pintu, panik nggak tuh? Hihihi santai aja~",
+  "Udah ngerasa jadi princess kosan belum malam ini?",
+  "Cantik dari dalam, nyaman di badan. Have fun ya manis~"
 ];
 
-// Aktivitas Mood untuk Tantangan Dare
-const MOOD_ACTIVITIES = {
-  santai: [
-    "Nonton drakor / anime 1 episode santai di kasur",
-    "Seduh teh hangat & dengerin musik lofi di kamar",
-    "Perawatan muka / maskeran santai sambil mirror selfie",
-    "Baca buku / novel favorit sambil tiduran",
-    "Nyalain lilin aromaterapi / diffuser sambil rileks"
-  ],
-  produktif: [
-    "Beresin & rapihin lemari pakaian rahasia",
-    "Belajar coding / selesaikan tugas harian 45 menit",
-    "Workout ringan, squat 30x, dan stretching tubuh",
-    "Sapu & pel lantai kamar sampai wangi & kinclong",
-    "Journaling mendalam tentang perasaan & evaluasi outfit"
-  ],
-  // =========================================================================
-  // KUSTOM / EKSTREM: User dapat menambahkan / mengubah aktivitas ekstrem
-  // di dalam array di bawah ini sesuai kenyamanan masing-masing:
-  // =========================================================================
-  ekstrem: [
-    "Bikin video dance / pose TikTok rahasia di kamar lalu simpan ke arsip pribadi",
-    "Foto mirror selfie ootd lengkap 10 angle berbeda lalu evaluasi di cermin",
-    "Jalan mondar-mandir anggun di kamar sambil latihan postur tubuh selama 15 menit",
-    "Teleponan sama teman akrab sambil tetap mengenakan outfit ini tanpa ketahuan",
-    "Duduk santai di depan laptop mengetik sambil mengenakan outfit ini sampai quest selesai"
-  ]
-};
-
-// 5 Kalimat Ejekan Tajam (Savage Mockery) saat menekan tombol Nyerah
+// =========================================================================
+// 2. SAVAGE MOCKERIES (Ejekan Saat Nyerah - 20 Variasi)
+// =========================================================================
 const SAVAGE_MOCKERIES = [
   "Yahh cupu banget, baru segini doang udah nyerah & ciut nyalinya? Hahaha!",
   "Lemah! Katanya mau jadi Brave Girl, ternyata aslinya penakut banget hihihi~",
   "Malu dong sama outfitnya! Baru sebentar udah gak kuat, payah deh~",
   "Cuma segini doang nyalinya? Kecewa banget, balik sana pakai baju biasa!",
-  "Dasar cupu penakut! Gelar kamu resmi diturunkan karena bermental tempe!"
+  "Dasar cupu penakut! Gelar kamu resmi diturunkan karena bermental tempe!",
+  "Halah, baru pakai bentar udah gerah ya? Dasar cowok lemah~",
+  "Yahh, tombol nyerahnya dipencet. Gak seru ah, mentalnya gampang down!",
+  "Ciee panik ya ketakutan sendiri? Makanya jangan sok berani dari awal hahaha.",
+  "Ganti baju sana, pantesan nggak cocok, mentalnya aja cetek gitu~",
+  "Cupu! Padahal tadi di kaca udah senyum-senyum, eh nyerah juga.",
+  "Baru juga mulai, udah kepencet nyerah. Gemetar ya tangannya?",
+  "Hahaha, takut ada yang ngetok pintu ya? Mental kerupuk banget!",
+  "Gak pantes dapet poin! Copot aja bajunya, simpen lagi di lemari!",
+  "Yahh, durasinya belum abis loh. Lemah banget sih nahan ginian doang.",
+  "Katanya mau nyari adrenaline, dikasih tantangan malah kabur. Payah!",
+  "Udah tau ujungnya nyerah, ngapain tadi sok-sokan nerima tantangannya?",
+  "Mental gamer doang berani di game, di real life disuruh pakai baju gini aja nyerah!",
+  "Huuuu! Turun level deh. Balik jadi pemula aja sana, gausah gaya-gayaan.",
+  "Yah elah, baru kerasa dikit ketatnya udah gak tahan. Cupu ah!",
+  "Tantangan gagal! Gelar kesayanganmu kutarik lagi ya, bye penakut~"
 ];
+
+// =========================================================================
+// 3. MOOD ACTIVITIES (Aktivitas Tantangan Dare - @ 30+ Variasi)
+// =========================================================================
+const MOOD_ACTIVITIES = {
+  // --- KATEGORI SANTAI / REBAHAN (35 Aktivitas) ---
+  santai: [
+    "Nonton video horor Nadia Omara di YouTube sambil rebahan",
+    "Main Stardew Valley mode santai di PC sambil nyemil",
+    "Seduh teh hangat & dengerin musik lofi di kasur",
+    "Perawatan muka / maskeran santai sambil mirror selfie",
+    "Baca buku, webtoon, atau novel favorit sambil tiduran",
+    "Nyalain lilin aromaterapi / diffuser biar kosan wangi",
+    "Scroll TikTok / IG nyari referensi outfit atau fashion cewek",
+    "Pesen Mie Gacoan level 1 di ojol sambil nunggu di kasur",
+    "Main Frostpunk tapi pake mode paling gampang/easy biar gak mikir",
+    "Rebahan doang nikmatin tekstur baju yang nempel di kulit",
+    "Main Red Dead Redemption 2 cuma buat jalan-jalan naik kuda santai",
+    "Buka e-commerce masukin barang ke keranjang / wishlist doang",
+    "Luluran tangan dan kaki tipis-tipis biar kulit makin halus",
+    "Nyisir rambut pelan-pelan sambil ngaca di depan cermin",
+    "Nonton review hardware PC rakitan atau thermal pad di YouTube",
+    "Dengerin podcast horor pake headset sambil merem",
+    "Latihan senyum dan ekspresi wajah feminim di depan kaca",
+    "Nge-game SnowRunner bawa truk santai ngelewatin lumpur",
+    "Coba-coba nail art transparan atau warna pastel kalau berani",
+    "Main game hp sambil kaki disenderin ke tembok ke atas",
+    "Duduk santai natap jendela kosan menikmati angin malam",
+    "Foto-foto tangan atau kaki sendiri yang udah dirawat",
+    "Nonton drakor romcom 1 episode full tanpa di-skip",
+    "Dengerin lagu pop galau sambil ngebayangin skenario lucu",
+    "Makan camilan sambil nonton live streaming game di Twitch",
+    "Tidur siang / rebahan merem 30 menit full pakai outfit ini",
+    "Pilih-pilih dan dengerin playlist Spotify yang vibes-nya 'girly'",
+    "Bersihin layar HP dan laptop pakai tisu microfiber pelan-pelan",
+    "Nulis jurnal digital tentang perasaan pakai outfit ini hari ini",
+    "Nge-teh sambil baca-baca forum Reddit atau Discord santai",
+    "Main The Forest tapi mode damai (veganmode) buat bangun rumah doang",
+    "Latihan pernapasan / meditasi santai duduk bersila di kasur",
+    "Bikin teh manis anget dan diminum pelan-pelan banget",
+    "Nonton kompilasi video kucing lucu di YouTube",
+    "Rebahan telentang sambil ngerasain wangi parfum/body mist sendiri"
+  ],
+
+  // --- KATEGORI PRODUKTIF / FOKUS (35 Aktivitas) ---
+  produktif: [
+    "Lanjut ngoding The Guard Slime di Unity (C#) selama 45 menit",
+    "Push commit PWA ArcadeFin atau web portfolio ke GitHub Pages",
+    "Beresin & rapihin lemari pakaian rahasia biar gak ketahuan",
+    "Bikin workflow visual data pipeline baru di KNIME Analytics",
+    "Belajar materi Data Science / Python di Dicoding",
+    "Rapiin kabel (cable management) setup PC dual monitor",
+    "Bersihin GPU RTX 3080 Ti atau kipas PC dari debu tipis-tipis",
+    "Workout ringan: squat 30x dan peregangan tubuh (stretching)",
+    "Sapu & pel lantai kosan sampai wangi dan kinclong",
+    "Cuci daleman / baju cewek pakai tangan di kamar mandi hati-hati",
+    "Evaluasi pengeluaran bulanan dan catat di aplikasi tracker",
+    "Beresin kasur, lipat selimut, dan rapikan baju-baju cowok",
+    "Latihan ngetik 10 jari (Typing test) selama 15 menit non-stop",
+    "Bikin desain/UI Figma buat project PWA atau game selanjutnya",
+    "Lap helm dan rapihin jaket riding Yamaha Aerox di dalam kamar",
+    "Setrika kemeja atau baju untuk dipakai keluar besok",
+    "Merapikan isi dompet dan tas selempang yang berantakan",
+    "Backup data penting dari laptop ke Google Drive atau Hardisk",
+    "Riset lowongan kerja IT / Data Analyst di LinkedIn",
+    "Update isi CV atau profil GitHub biar kelihatan profesional",
+    "Journaling mendalam tentang evaluasi outfit dan mood hari ini",
+    "Mengerjakan sisa task/tugas dari freelance atau kerjaan",
+    "Membersihkan sisa-sisa thermal paste bekas di meja kerja",
+    "Rapiin file-file dan folder yang berantakan di desktop PC",
+    "Latihan postur duduk tegak yang benar selama kerja di depan PC",
+    "Membaca dokumentasi API atau library JS yang belum dipahami",
+    "Bikin list belanja lauk pauk dan stok beras untuk minggu ini",
+    "Mengatur jadwal alarm dan kalender untuk kegiatan seminggu ke depan",
+    "Menjahit sedikit bagian baju/celana yang robek kalau ada",
+    "Membersihkan layar monitor dual FHD pakai cairan khusus",
+    "Mencari referensi 2D assets baru di itch.io untuk game indie",
+    "Menyusun ide cerita atau mekanik baru untuk ContractKiller",
+    "Belajar setup LLM lokal pakai Hugging Face / GPT4All 30 menit",
+    "Merapikan history browser dan hapus cache yang gak perlu",
+    "Beresin rak sepatu atau sandal yang berantakan di depan pintu"
+  ],
+
+  // --- KATEGORI EKSTREM / ADRENALINE & THRILL (35 Aktivitas) ---
+  // (Fokus pada sensasi takut ketahuan, aktivitas fisik saat terikat pakaian, dan roleplay tertutup)
+  ekstrem: [
+    "Buka pintu kamar kosan sedikit (jangan dikunci) selama 10 menit penuh",
+    "Main Valorant mode Competitive sambil nahan deg-degan pakai outfit ini",
+    "Bikin Voice Note (VN) WA ke temen/pacar dengan nada suara normal tanpa ketahuan",
+    "Berdiri di deket jendela kosan yang gordennya agak terbuka sedikit",
+    "Jalan mondar-mandir ala catwalk di kamar sambil latihan postur selama 15 menit",
+    "Foto OOTD mirror selfie full body 10 angle berbeda, simpan ke arsip rahasia",
+    "Bikin video TikTok private nge-dance pelan atau pose imut pakai outfit ini",
+    "Mabar Call of Duty pakai open mic, tahan ekspresi biar suara gak berubah",
+    "Latihan pose duduk feminim (kaki menyilang) di depan laptop 45 menit tanpa ubah posisi",
+    "Push-up 15x dan Squat 40x pakai outfit lengkap (tahan gerahnya!)",
+    "Duduk di lantai nyender tembok tanpa bantal selama 30 menit (tes kenyamanan pakaian)",
+    "Pesen Gofood, dan pas abang ojol udah deket banget, baru panik ganti baju cowok",
+    "Teleponan sama teman akrab/keluarga 5 menit sambil tetap mengenakan outfit ini",
+    "Ganti status Discord/WA jadi online dan ladeni chat orang sambil pakai outfit ini",
+    "Berjalan jinjit tanpa suara mengelilingi kamar sebanyak 20 putaran",
+    "Selfie close-up wajah dengan senyum paling feminim, jadikan wallpaper HP (sementara)",
+    "Coba ganti-ganti 3 outfit berbeda dalam waktu kurang dari 5 menit (time attack!)",
+    "Pakai outfit ini tanpa jaket luar sambil main game horor yang bikin kaget",
+    "Cari angle kamera dari bawah meja seolah-olah lagi ngintip diri sendiri",
+    "Menahan napas dan meratakan perut selama 1 menit (korset training ringan) diulang 3x",
+    "Angkat galon atau angkat barang berat di kamar sambil berusaha tetap bergerak anggun",
+    "Nonton video prank jump-scare tapi dilarang teriak atau bereaksi kaget",
+    "Dandan sedetail mungkin, lalu hapus semuanya dalam waktu 3 menit sebelum timer habis",
+    "Bikin rekaman suara sendiri baca puisi atau lirik lagu pakai nada paling lembut",
+    "Cobain pose-pose yoga ringan atau peregangan ekstrem biar tau batas melar bajunya",
+    "Menatap mata sendiri di cermin selama 5 menit tanpa memalingkan wajah sama sekali",
+    "Tinggalkan kunci kamar di luar pintu selama 5 menit (risiko ada yang buka tiba-tiba)",
+    "Ngoding ngetik cepat dengan kuku palsu (kalau punya) atau jari yang sangat dilentikkan",
+    "Ikat rambut ke atas atau pakai jepit rambut, lalu VCALL tanpa kamera ke teman",
+    "Biarkan layar monitor menyala terang menampilkan foto cewek/referensi outfit ke arah pintu",
+    "Pakai headset noise-canceling full volume (gak bisa denger kalau ada yang ngetok pintu)",
+    "Tulis surat rahasia tentang fantasi crossdressing-mu di kertas, lalu gunting sampai hancur",
+    "Pakai pakaian ini berlapis-lapis (layering) sampai benar-benar gerah dan tahan 20 menit",
+    "Tidur-tiduran di lantai dingin kosan tanpa alas sambil merasakan sensasinya",
+    "Pura-pura jadi streamer cewek (ngomong sendiri ke layar) seolah lagi live selama 10 menit"
+  ]
+};
 
 // Contoh Data Default Jurnal Pakaian
 const DEFAULT_JOURNAL = [
