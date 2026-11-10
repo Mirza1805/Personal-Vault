@@ -292,7 +292,6 @@ function switchScreen(screenId) {
   if (screenId !== 'vault') {
     document.body.classList.remove('feminine-theme');
   }
-<<<<<<< HEAD
 }
 
 // ==========================================
@@ -421,88 +420,6 @@ function initPinLock() {
   setupPinScreenBackdoors();
 }
 
-=======
-}
-
-// ==========================================
-// 5. FITUR 1: SLIME CLICKER & GEMBOK GAIB
-// ==========================================
-
-function initSlimeGame() {
-  // Ambil skor tersimpan agar game terasa nyata
-  const savedScore = parseInt(localStorage.getItem('slime_game_score') || '0', 10);
-  slimeScore = isNaN(savedScore) ? 0 : savedScore;
-  updateSlimeScoreUI();
-
-  const slimeChar = document.getElementById('slime-character');
-  const scoreTrigger = document.getElementById('slime-score-trigger');
-
-  // Klik karakter Slime -> Tambah skor & efek animasi squish
-  slimeChar?.addEventListener('click', (e) => {
-    slimeScore += 1;
-    localStorage.setItem('slime_game_score', slimeScore.toString());
-    updateSlimeScoreUI();
-    vibrate(10);
-    spawnSlimeParticle(e);
-  });
-
-  // GEMBOK GAIB: Ketuk tulisan "Score" sebanyak 5 kali secara cepat dalam < 2 detik
-  scoreTrigger?.addEventListener('click', () => {
-    const now = Date.now();
-    scoreClickTimestamps.push(now);
-
-    // Filter klik yang hanya terjadi dalam rentang 2000ms terakhir
-    scoreClickTimestamps = scoreClickTimestamps.filter((t) => now - t <= 2000);
-
-    if (scoreClickTimestamps.length >= 5) {
-      scoreClickTimestamps = [];
-      vibrate([30, 20, 40]);
-      showToast('🔑 Gembok Gaib Terbuka...', 1000);
-
-      // Buka Layar PIN Lock
-      switchScreen('pin');
-    }
-  });
-}
-
-function updateSlimeScoreUI() {
-  const scoreVal = document.getElementById('slime-score-val');
-  const powerVal = document.getElementById('slime-power-val');
-  if (scoreVal) scoreVal.textContent = slimeScore.toLocaleString();
-  if (powerVal) {
-    const level = Math.floor(slimeScore / 25) + 1;
-    powerVal.textContent = `Lv. ${level}`;
-  }
-}
-
-function spawnSlimeParticle(e) {
-  const stage = document.querySelector('.slime-stage');
-  if (!stage) return;
-
-  const particle = document.createElement('div');
-  particle.className = 'slime-particle';
-  particle.textContent = '+1';
-
-  const rect = stage.getBoundingClientRect();
-  const x = (e.clientX || rect.left + rect.width / 2) - rect.left - 10;
-  const y = (e.clientY || rect.top + rect.height / 2) - rect.top - 20;
-
-  particle.style.left = `${x}px`;
-  particle.style.top = `${y}px`;
-
-  stage.appendChild(particle);
-  setTimeout(() => particle.remove(), 750);
-}
-
-// ==========================================
-// 6. FITUR 2: DECOY PIN & 3-STRIKE LOCKDOWN
-// ==========================================
-
-function initPinLock() {
-  setupNumpad();
-}
-
->>>>>>> 5437e9e0f4f3195b913a768d5113ebdfef1ff0f0
 function setupNumpad() {
   const numpad = document.querySelector('.numpad');
   if (!numpad) return;
@@ -634,7 +551,6 @@ function updatePinDots() {
 function clearPinError() {
   const errEl = document.getElementById('pin-error');
   if (errEl) errEl.textContent = '';
-<<<<<<< HEAD
 }
 
 function showPinError(msg) {
@@ -717,14 +633,6 @@ function verifyPinInput() {
 // ==========================================
 // 6B. JALAN RAHASIA PADA HALAMAN CODING TASKS (CAMOUFLAGE)
 // ==========================================
-=======
-}
-
-function showPinError(msg) {
-  const errEl = document.getElementById('pin-error');
-  if (errEl) errEl.textContent = msg;
-}
->>>>>>> 5437e9e0f4f3195b913a768d5113ebdfef1ff0f0
 
 function initCamoBackdoors() {
   const gearTrigger = document.getElementById('camo-gear-trigger');
@@ -838,76 +746,9 @@ function initCamoBackdoors() {
 }
 
 /**
-<<<<<<< HEAD
  * Utilitas Console & Global untuk me-reset lockdown darurat:
  * Ketik di browser console: window.resetVaultLockdown()
  */
-=======
- * Logika PIN (True PIN, Decoy PIN, dan 3-Strike Lockdown)
- */
-function verifyPinInput() {
-  // 1. KASUS TRUE PIN: 0290 -> Buka Personal Vault Utama
-  if (pinInput === TRUE_PIN) {
-    vibrate(35);
-    failedPinAttempts = 0;
-    pinInput = '';
-    updatePinDots();
-
-    // Aktifkan tema warna feminim/elegan
-    document.body.classList.add('feminine-theme');
-
-    switchScreen('vault');
-    initVaultApp();
-    showToast('✨ Personal Vault Terbuka');
-    return;
-  }
-
-  // 2. KASUS DECOY PIN: 0000 -> Buka Halaman Palsu "Coding Tasks"
-  if (pinInput === DECOY_PIN) {
-    vibrate(20);
-    pinInput = '';
-    updatePinDots();
-    switchScreen('camo');
-    showToast('Workspace: Coding Tasks Terbuka');
-    return;
-  }
-
-  // 3. KASUS PIN SALAH -> Hitung Strike
-  failedPinAttempts += 1;
-  vibrate([50, 40, 50]);
-
-  const dotsContainer = document.getElementById('pin-dots');
-  dotsContainer.classList.add('shake');
-  setTimeout(() => dotsContainer.classList.remove('shake'), 450);
-
-  if (failedPinAttempts >= 3) {
-    // 3-STRIKE LOCKDOWN PERMANEN
-    const settings = loadSecure(STORAGE_KEYS.settings, {});
-    settings.lockdown = true;
-    saveSecure(STORAGE_KEYS.settings, settings);
-
-    showPinError('3x GAGAL: LOCKDOWN PERMANEN DIAKTIFKAN!');
-    vibrate([80, 50, 80, 50, 80]);
-
-    setTimeout(() => {
-      pinInput = '';
-      updatePinDots();
-      switchScreen('camo');
-    }, 1200);
-    return;
-  }
-
-  const sisa = 3 - failedPinAttempts;
-  showPinError(`PIN SALAH! Sisa kesempatan: ${sisa}x`);
-  pinInput = '';
-  updatePinDots();
-}
-
-/**
- * Utilitas Console Rahasia untuk me-reset lockdown darurat:
- * Ketik di browser console: window.resetVaultLockdown()
- */
->>>>>>> 5437e9e0f4f3195b913a768d5113ebdfef1ff0f0
 window.resetVaultLockdown = function() {
   const settings = loadSecure(STORAGE_KEYS.settings, {});
   settings.lockdown = false;
@@ -915,7 +756,6 @@ window.resetVaultLockdown = function() {
   failedPinAttempts = 0;
   switchScreen('slime');
   console.log("%c[VAULT UNLOCKED] Status lockdown berhasil di-reset ke Game Slime.", "color: #10b981; font-weight: bold;");
-<<<<<<< HEAD
   return "Lockdown di-reset ke Slime Game.";
 };
 
@@ -926,9 +766,6 @@ window.resetVaultLockdown = function() {
 window.unlockVaultDirect = function() {
   triggerMasterUnlock('Console Direct Unlock');
   return "Vault terbuka.";
-=======
-  return "Lockdown di-reset.";
->>>>>>> 5437e9e0f4f3195b913a768d5113ebdfef1ff0f0
 };
 
 // ==========================================
@@ -2467,7 +2304,6 @@ function initVaultApp() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-<<<<<<< HEAD
   // 1. Selalu inisialisasi semua modul interaktif & seluruh pintu rahasia
   initSlimeGame();
   initPinLock();
@@ -2492,22 +2328,6 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // 4. Daftarkan Service Worker PWA Caching
-=======
-  // 1. Cek apakah ada status Lockdown 3-Strike Permanen
-  const settings = loadSecure(STORAGE_KEYS.settings, {});
-  if (settings.lockdown === true) {
-    // Pengguna terkunci permanen: Langsung arahkan ke Coding Tasks!
-    switchScreen('camo');
-    return;
-  }
-
-  // 2. Jika normal, buka Layar Slime Clicker Game (Layar Awal Plausible Deniability)
-  switchScreen('slime');
-  initSlimeGame();
-  initPinLock();
-
-  // 3. Daftarkan Service Worker PWA Caching
->>>>>>> 5437e9e0f4f3195b913a768d5113ebdfef1ff0f0
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('./sw.js')
       .then((reg) => console.log('SW Registered Scope:', reg.scope))
