@@ -2,11 +2,11 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <meta name="theme-color" content="#0a0a0f">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#09090b">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="description" content="Personal Vault - Private Utility">
+  <meta name="description" content="Personal Vault - Private Utility & Wardrobe Management">
   <title>Personal Vault</title>
   <link rel="manifest" href="manifest.json">
   <link rel="stylesheet" href="style.css">
@@ -14,240 +14,362 @@
 <body>
 
   <!-- ============================================ -->
-  <!-- PIN LOCK SCREEN                              -->
+  <!-- 1. STEALTH PIN LOCK SCREEN (NETRAL / IT TOOL)-->
   <!-- ============================================ -->
   <div id="pin-screen" class="screen">
-    <div class="pin-container">
-      <div class="pin-icon">
-        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-          <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-          <circle cx="12" cy="16" r="1"/>
-        </svg>
-      </div>
-      <p class="pin-subtitle">Enter PIN</p>
-
-      <!-- Dot indicators -->
-      <div class="pin-dots" id="pin-dots">
-        <span class="dot"></span>
-        <span class="dot"></span>
-        <span class="dot"></span>
-        <span class="dot"></span>
+    <div class="pin-terminal">
+      <div class="terminal-header">
+        <span class="terminal-dot red"></span>
+        <span class="terminal-dot yellow"></span>
+        <span class="terminal-dot green"></span>
+        <span class="terminal-title">AUTH_GATEWAY // v2.4</span>
       </div>
 
-      <p class="pin-error" id="pin-error"></p>
+      <div class="terminal-body">
+        <div class="terminal-prompt">
+          <span class="prompt-user">user@vault</span>:<span class="prompt-path">~#</span>
+          <span class="prompt-action">enter-passcode</span>
+        </div>
+        <p class="pin-subtitle">SYSTEM RESTRICTED • ENTER 4-DIGIT PIN</p>
 
-      <!-- Numpad -->
-      <div class="numpad">
-        <button class="num-btn" data-num="1">1</button>
-        <button class="num-btn" data-num="2">2</button>
-        <button class="num-btn" data-num="3">3</button>
-        <button class="num-btn" data-num="4">4</button>
-        <button class="num-btn" data-num="5">5</button>
-        <button class="num-btn" data-num="6">6</button>
-        <button class="num-btn" data-num="7">7</button>
-        <button class="num-btn" data-num="8">8</button>
-        <button class="num-btn" data-num="9">9</button>
-        <button class="num-btn fn-btn" data-action="clear">C</button>
-        <button class="num-btn" data-num="0">0</button>
-        <button class="num-btn fn-btn" data-action="back">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"/>
-            <line x1="18" y1="9" x2="12" y2="15"/><line x1="12" y1="9" x2="18" y2="15"/>
-          </svg>
+        <!-- PIN Dots Indicator -->
+        <div class="pin-dots" id="pin-dots">
+          <span class="dot"></span>
+          <span class="dot"></span>
+          <span class="dot"></span>
+          <span class="dot"></span>
+        </div>
+
+        <p class="pin-error" id="pin-error"></p>
+
+        <!-- Numpad -->
+        <div class="numpad">
+          <button class="num-btn" data-num="1">1</button>
+          <button class="num-btn" data-num="2">2</button>
+          <button class="num-btn" data-num="3">3</button>
+          <button class="num-btn" data-num="4">4</button>
+          <button class="num-btn" data-num="5">5</button>
+          <button class="num-btn" data-num="6">6</button>
+          <button class="num-btn" data-num="7">7</button>
+          <button class="num-btn" data-num="8">8</button>
+          <button class="num-btn" data-num="9">9</button>
+          <button class="num-btn fn-btn" data-action="clear">C</button>
+          <button class="num-btn" data-num="0">0</button>
+          <button class="num-btn fn-btn" data-action="back" aria-label="Backspace">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"/>
+              <line x1="18" y1="9" x2="12" y2="15"/><line x1="12" y1="9" x2="18" y2="15"/>
+            </svg>
+          </button>
+        </div>
+        <div class="stealth-footer">TERMINAL ID: 0x7E3A • ENCRYPTED STORAGE</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================ -->
+  <!-- 2. CAMOUFLAGE / PANIC SCREEN (CODING TASKS)  -->
+  <!-- ============================================ -->
+  <div id="camo-screen" class="screen" style="display: none;">
+    <header class="camo-header">
+      <div class="camo-brand">
+        <span class="camo-icon">⚙️</span>
+        <div>
+          <h1>DevSprint Workspace</h1>
+          <small>Sprint 14: Core Services & Infrastructure</small>
+        </div>
+      </div>
+      <span class="camo-badge">IN PROGRESS</span>
+    </header>
+
+    <div class="camo-content">
+      <div class="camo-stat-row">
+        <div class="camo-stat"><span>Total Tasks</span><strong>14</strong></div>
+        <div class="camo-stat"><span>Completed</span><strong>9</strong></div>
+        <div class="camo-stat"><span>Velocity</span><strong>84%</strong></div>
+      </div>
+
+      <div class="camo-item done">
+        <span class="camo-check">✅</span>
+        <div class="camo-text">
+          <strong>Refactor /auth/jwt middleware token validation</strong>
+          <small>Closed by @backend-core • 2 hours ago</small>
+        </div>
+      </div>
+      <div class="camo-item done">
+        <span class="camo-check">✅</span>
+        <div class="camo-text">
+          <strong>Fix CORS wildcard headers on staging API gateway</strong>
+          <small>PR #418 merged • Yesterday</small>
+        </div>
+      </div>
+      <div class="camo-item done">
+        <span class="camo-check">✅</span>
+        <div class="camo-text">
+          <strong>Database migration: add indexed foreign keys</strong>
+          <small>Executed on prod-replica • Yesterday</small>
+        </div>
+      </div>
+      <div class="camo-item">
+        <span class="camo-check">⏳</span>
+        <div class="camo-text">
+          <strong>Setup rate-limiting bucket using Redis cluster</strong>
+          <small>Assigned: High Priority • Due in 2 days</small>
+        </div>
+      </div>
+      <div class="camo-item">
+        <span class="camo-check">⏳</span>
+        <div class="camo-text">
+          <strong>Update OpenAPI / Swagger schema specifications</strong>
+          <small>Assigned: Medium Priority</small>
+        </div>
+      </div>
+      <div class="camo-item">
+        <span class="camo-check">⏳</span>
+        <div class="camo-text">
+          <strong>Benchmark memory leak during WebSocket streaming</strong>
+          <small>Assigned: Low Priority</small>
+        </div>
+      </div>
+      <div class="camo-item">
+        <span class="camo-check">⏳</span>
+        <div class="camo-text">
+          <strong>Implement automated rollback in CI/CD pipeline</strong>
+          <small>Under Review</small>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================ -->
+  <!-- 3. MAIN APP (DYNAMIC THEME: FEMININE / ELEGANT)-->
+  <!-- ============================================ -->
+  <div id="main-app" class="screen" style="display: none;">
+
+    <!-- Header dengan Panic Trigger (Double-Click / Double-Tap) -->
+    <header id="app-header">
+      <div class="header-content">
+        <div class="header-logo">
+          <span class="vault-symbol">🔒</span>
+          <h1>Personal Vault</h1>
+        </div>
+        <button id="panic-indicator" class="panic-btn" title="Double tap header to camouflage" aria-label="Panic switch">
+          <span class="panic-pulse"></span>
+          🛡️
         </button>
       </div>
-    </div>
-  </div>
-
-  <!-- ============================================ -->
-  <!-- CAMOUFLAGE / PANIC SCREEN                    -->
-  <!-- ============================================ -->
-  <div id="camo-screen" class="screen" style="display:none;">
-    <header class="camo-header">
-      <h1>📋 Coding Tasks</h1>
-      <span class="camo-badge">Sprint 14</span>
-    </header>
-    <div class="camo-content">
-      <div class="camo-item done">
-        <span class="camo-check">✅</span>
-        <div>
-          <strong>Debug API endpoint /users</strong>
-          <small>Completed 2h ago</small>
-        </div>
-      </div>
-      <div class="camo-item done">
-        <span class="camo-check">✅</span>
-        <div>
-          <strong>Fix CORS headers on staging</strong>
-          <small>Completed yesterday</small>
-        </div>
-      </div>
-      <div class="camo-item done">
-        <span class="camo-check">✅</span>
-        <div>
-          <strong>Deploy hotfix v2.3.1 to prod</strong>
-          <small>Completed 3h ago</small>
-        </div>
-      </div>
-      <div class="camo-item">
-        <span class="camo-check">⬜</span>
-        <div>
-          <strong>Refactor auth middleware</strong>
-          <small>Priority: High</small>
-        </div>
-      </div>
-      <div class="camo-item">
-        <span class="camo-check">⬜</span>
-        <div>
-          <strong>Write unit tests for UserService</strong>
-          <small>Priority: Medium</small>
-        </div>
-      </div>
-      <div class="camo-item">
-        <span class="camo-check">⬜</span>
-        <div>
-          <strong>Fix CSS grid layout on mobile Safari</strong>
-          <small>Priority: Medium</small>
-        </div>
-      </div>
-      <div class="camo-item">
-        <span class="camo-check">⬜</span>
-        <div>
-          <strong>Update README.md &amp; API docs</strong>
-          <small>Priority: Low</small>
-        </div>
-      </div>
-      <div class="camo-item">
-        <span class="camo-check">⬜</span>
-        <div>
-          <strong>Code review PR #142</strong>
-          <small>Assigned by @lead</small>
-        </div>
-      </div>
-      <div class="camo-item">
-        <span class="camo-check">⬜</span>
-        <div>
-          <strong>Setup CI/CD pipeline for microservice</strong>
-          <small>Priority: Low</small>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ============================================ -->
-  <!-- MAIN APPLICATION                             -->
-  <!-- ============================================ -->
-  <div id="main-app" class="screen" style="display:none;">
-
-    <!-- Header (double-click = panic) -->
-    <header id="app-header">
-      <h1>Personal Vault</h1>
-      <span class="header-hint" title="Double-tap to hide">🛡️</span>
     </header>
 
     <!-- Global Progress Bar -->
-    <div class="progress-container" id="progress-container">
+    <div class="progress-wrap" id="progress-wrap">
       <div class="progress-bar" id="progress-bar"></div>
       <span class="progress-text" id="progress-text">0%</span>
     </div>
 
-    <!-- Tab Content Area -->
+    <!-- Main Scrollable Area -->
     <main id="app-main">
 
-      <!-- ====== TAB: TASKS ====== -->
+      <!-- ======================================== -->
+      <!-- TAB 1: MULTI-CATEGORY CHECKLIST          -->
+      <!-- ======================================== -->
       <section id="tab-tasks" class="tab-content active">
-        <div class="section-group">
-          <h2 class="section-title">📌 Daily Tasks</h2>
-          <div id="daily-tasks" class="task-list"></div>
-          <div class="add-task-row">
-            <input type="text" id="input-daily-task" class="input-field" placeholder="Tambah tugas harian..." maxlength="100">
-            <button class="btn-add" id="btn-add-daily" aria-label="Add daily task">+</button>
+        <div class="tab-header-row">
+          <div>
+            <h2 class="tab-heading">My Checklist</h2>
+            <p class="tab-sub">Kelola tugas harian, belanjaan & aktivitas</p>
+          </div>
+          <button class="btn-create-category" id="btn-toggle-cat-form">+ Kategori</button>
+        </div>
+
+        <!-- Form Tambah Kategori Baru -->
+        <div id="new-category-box" class="card form-card collapse-card">
+          <h3 class="form-title">✨ Buat Kategori Baru</h3>
+          <div class="form-row">
+            <input type="text" id="input-cat-name" class="input-field" placeholder="Nama Kategori (mis: Belanja Bulanan, Tugas Kuliah)..." maxlength="50">
+          </div>
+          <div class="form-row checkbox-row">
+            <label class="custom-toggle">
+              <input type="checkbox" id="input-cat-daily">
+              <span class="toggle-slider"></span>
+            </label>
+            <div class="toggle-label-group">
+              <strong>Kategori Daily (Auto-Reset Harian)</strong>
+              <small>Centang semua tugas di kategori ini akan otomatis kembali kosong saat lewat 00:00 tengah malam.</small>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button class="btn-secondary" id="btn-cancel-cat">Batal</button>
+            <button class="btn-primary" id="btn-save-cat">Simpan Kategori</button>
           </div>
         </div>
 
-        <div class="section-group">
-          <h2 class="section-title">🗓️ Weekend Tasks</h2>
-          <div id="weekend-tasks" class="task-list"></div>
-          <div class="add-task-row">
-            <input type="text" id="input-weekend-task" class="input-field" placeholder="Tambah tugas weekend..." maxlength="100">
-            <button class="btn-add" id="btn-add-weekend" aria-label="Add weekend task">+</button>
-          </div>
-        </div>
+        <!-- Container Kategori Dinamis -->
+        <div id="category-list-container" class="category-list-container"></div>
       </section>
 
-      <!-- ====== TAB: WARDROBE GACHA ====== -->
+      <!-- ======================================== -->
+      <!-- TAB 2: WARDROBE GACHA & RNG PEMBALUT     -->
+      <!-- ======================================== -->
       <section id="tab-wardrobe" class="tab-content">
-        <!-- Add Wardrobe Item -->
-        <div class="section-group">
-          <h2 class="section-title">➕ Add to Wardrobe</h2>
-          <div class="wardrobe-form">
-            <select id="wardrobe-category" class="input-field">
-              <option value="underwear">🩲 Underwear</option>
-              <option value="tops">👕 Tops</option>
-              <option value="bottoms">👖 Bottoms</option>
-            </select>
-            <input type="text" id="wardrobe-item-name" class="input-field" placeholder="Nama pakaian..." maxlength="60">
-            <button class="btn-primary" id="btn-add-wardrobe">Tambah Item</button>
+        <div class="tab-header-row">
+          <div>
+            <h2 class="tab-heading">Wardrobe & Gacha</h2>
+            <p class="tab-sub">Randomizer outfit harian & koleksi pakaian rahasia</p>
           </div>
         </div>
 
-        <!-- Gacha Spin Area -->
-        <div class="section-group gacha-section">
-          <h2 class="section-title">🎰 Outfit Generator</h2>
-          <div class="gacha-slots">
-            <div class="gacha-slot" id="slot-underwear">
-              <span class="slot-label">🩲 Underwear</span>
-              <span class="slot-value" id="slot-val-underwear">—</span>
-            </div>
-            <div class="gacha-slot" id="slot-tops">
-              <span class="slot-label">👕 Tops</span>
-              <span class="slot-value" id="slot-val-tops">—</span>
-            </div>
-            <div class="gacha-slot" id="slot-bottoms">
-              <span class="slot-label">👖 Bottoms</span>
-              <span class="slot-value" id="slot-val-bottoms">—</span>
+        <!-- Gacha Controller Section -->
+        <div class="card gacha-card">
+          <div class="gacha-mode-header">
+            <span class="mode-label">Pilih Mode Gacha:</span>
+            <div class="mode-selector">
+              <label class="mode-radio">
+                <input type="radio" name="gacha-mode" value="cowok" checked>
+                <span class="radio-pill">🕶️ Full Cowok</span>
+              </label>
+              <label class="mode-radio">
+                <input type="radio" name="gacha-mode" value="mix">
+                <span class="radio-pill">🌸 Mix / Feminim</span>
+              </label>
             </div>
           </div>
+
+          <div id="mode-hint-banner" class="mode-hint-banner">
+            Mode Cowok: Hanya mengacak pakaian cowok. Kerudung & pembalut dinonaktifkan.
+          </div>
+
+          <!-- Gacha Display Slots -->
+          <div class="gacha-slots-grid">
+            <div class="slot-box" id="slot-top">
+              <span class="slot-tag">👕 Top</span>
+              <span class="slot-text" id="slot-val-top">—</span>
+            </div>
+            <div class="slot-box" id="slot-bottom">
+              <span class="slot-tag">👖 Bottom</span>
+              <span class="slot-text" id="slot-val-bottom">—</span>
+            </div>
+            <div class="slot-box" id="slot-underwear">
+              <span class="slot-tag">🩲 Underwear</span>
+              <span class="slot-text" id="slot-val-underwear">—</span>
+            </div>
+            <div class="slot-box" id="slot-kerudung">
+              <span class="slot-tag">🧕 Kerudung</span>
+              <span class="slot-text" id="slot-val-kerudung">—</span>
+            </div>
+          </div>
+
+          <!-- RNG Pembalut Result (Hanya tampil di Mode Mix/Feminim) -->
+          <div class="pembalut-box" id="pembalut-box" style="display: none;">
+            <div class="pembalut-header">
+              <span class="pembalut-icon">🩸</span>
+              <span class="pembalut-label">RNG Status Pembalut:</span>
+            </div>
+            <div class="pembalut-status" id="pembalut-status">—</div>
+          </div>
+
+          <!-- Teasing Box (Kata-Kata Godaan) -->
+          <div class="teasing-box" id="teasing-box" style="display: none;">
+            <div class="teasing-bubble">
+              <span class="teasing-emoji">🤫💬</span>
+              <p class="teasing-message" id="teasing-message">Ciee dandan cantik hari ini hihihi~</p>
+            </div>
+          </div>
+
+          <!-- Spin Action Button -->
           <button class="btn-spin" id="btn-spin">
-            <span class="spin-icon">🎲</span> Generate Outfit
+            <span class="spin-icon">🎲</span> Putar Outfit Hari Ini!
           </button>
         </div>
 
-        <!-- Wardrobe Inventory -->
+        <!-- Tambah Pakaian Baru -->
+        <div class="card form-card">
+          <h3 class="form-title">➕ Tambah Pakaian ke Lemari</h3>
+          <div class="form-row">
+            <input type="text" id="wardrobe-name" class="input-field" placeholder="Nama pakaian (mis: Kaos Oversize, Rok Plisket, Boxer)..." maxlength="60">
+          </div>
+          <div class="form-grid-2">
+            <div>
+              <label class="field-label">Kategori:</label>
+              <select id="wardrobe-category" class="input-field">
+                <option value="top">👕 Top (Atasan)</option>
+                <option value="bottom">👖 Bottom (Bawahan)</option>
+                <option value="underwear">🩲 Underwear (Daleman)</option>
+                <option value="kerudung">🧕 Kerudung</option>
+              </select>
+            </div>
+            <div>
+              <label class="field-label">Tag Gender:</label>
+              <select id="wardrobe-gender" class="input-field">
+                <option value="Cowok">🕶️ Cowok</option>
+                <option value="Cewek">🌸 Cewek</option>
+              </select>
+            </div>
+          </div>
+          <button class="btn-primary" id="btn-add-wardrobe">Simpan ke Lemari</button>
+        </div>
+
+        <!-- Koleksi Lemari Pakaian -->
         <div class="section-group">
-          <h2 class="section-title">👗 Inventory</h2>
-          <div id="wardrobe-list" class="wardrobe-list"></div>
+          <div class="tab-header-row">
+            <h3 class="section-title">👗 Koleksi Lemari</h3>
+            <div class="filter-gender-group">
+              <button class="filter-pill active" data-filter="all">Semua</button>
+              <button class="filter-pill" data-filter="Cowok">Cowok</button>
+              <button class="filter-pill" data-filter="Cewek">Cewek</button>
+            </div>
+          </div>
+          <div id="wardrobe-inventory-container" class="wardrobe-inventory-container"></div>
         </div>
       </section>
 
-      <!-- ====== TAB: JOURNAL ====== -->
+      <!-- ======================================== -->
+      <!-- TAB 3: COMFORT & SIZE JOURNAL            -->
+      <!-- ======================================== -->
       <section id="tab-journal" class="tab-content">
-        <!-- Journal Form -->
-        <div class="section-group">
-          <h2 class="section-title">✏️ New Entry</h2>
-          <div class="journal-form">
-            <input type="text" id="journal-name" class="input-field" placeholder="Nama item pakaian..." maxlength="60">
-            <input type="text" id="journal-size" class="input-field" placeholder="Ukuran (S/M/L/XL/42/etc.)" maxlength="20">
-            <div class="rating-row">
-              <label>Kenyamanan:</label>
-              <div class="star-rating" id="star-rating">
-                <span class="star" data-val="1">★</span>
-                <span class="star" data-val="2">★</span>
-                <span class="star" data-val="3">★</span>
-                <span class="star" data-val="4">★</span>
-                <span class="star" data-val="5">★</span>
-              </div>
-            </div>
-            <textarea id="journal-notes" class="input-field textarea" placeholder="Catatan (bahan, warna, kesan pakai, dll.)..." maxlength="300" rows="3"></textarea>
-            <button class="btn-primary" id="btn-add-journal">Simpan Entry</button>
+        <div class="tab-header-row">
+          <div>
+            <h2 class="tab-heading">Comfort & Size Journal</h2>
+            <p class="tab-sub">Catat detail ukuran, merk, & impresi kenyamanan pemakaian</p>
           </div>
         </div>
 
-        <!-- Journal Cards -->
+        <!-- Form Tambah Catatan Journal -->
+        <div class="card form-card">
+          <h3 class="form-title">✏️ Catat Impresi Pakaian</h3>
+          <div class="form-row">
+            <input type="text" id="journal-name" class="input-field" placeholder="Nama Pakaian (mis: Celana Jeans Navy, Daster Katun)..." maxlength="60">
+          </div>
+          <div class="form-grid-2">
+            <div>
+              <label class="field-label">Merk / Brand:</label>
+              <input type="text" id="journal-brand" class="input-field" placeholder="mis: Uniqlo, Zara, No Brand..." maxlength="40">
+            </div>
+            <div>
+              <label class="field-label">Ukuran:</label>
+              <input type="text" id="journal-size" class="input-field" placeholder="mis: M, L, 32, Free Size..." maxlength="20">
+            </div>
+          </div>
+          <div class="form-row rating-selection-row">
+            <label class="field-label">Rating Kenyamanan:</label>
+            <div class="star-rating" id="star-rating">
+              <span class="star" data-val="1">★</span>
+              <span class="star" data-val="2">★</span>
+              <span class="star" data-val="3">★</span>
+              <span class="star" data-val="4">★</span>
+              <span class="star" data-val="5">★</span>
+            </div>
+          </div>
+          <div class="form-row">
+            <label class="field-label">Catatan Bahan & Rasa Pakai:</label>
+            <textarea id="journal-notes" class="input-field textarea" placeholder="Ceritakan bagaimana bahan menyentuh kulit, elastisitas karet, rasa pas saat dipakai seharian..." rows="3" maxlength="400"></textarea>
+          </div>
+          <button class="btn-primary" id="btn-save-journal">Simpan ke Jurnal</button>
+        </div>
+
+        <!-- Daftar Kartu Jurnal -->
         <div class="section-group">
-          <h2 class="section-title">📓 My Journal</h2>
-          <div id="journal-cards" class="journal-cards"></div>
+          <h3 class="section-title">📓 Riwayat Jurnal</h3>
+          <div id="journal-cards-container" class="journal-cards-container"></div>
         </div>
       </section>
 
@@ -256,24 +378,30 @@
     <!-- Bottom Navigation -->
     <nav class="bottom-nav" id="bottom-nav">
       <button class="nav-btn active" data-tab="tasks">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
-        <span>Tasks</span>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+        </svg>
+        <span>Checklist</span>
       </button>
       <button class="nav-btn" data-tab="wardrobe">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M16 8l-4 4-4-4"/><path d="M12 12v6"/></svg>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/><path d="M16 8l-4 4-4-4"/><path d="M12 12v6"/>
+        </svg>
         <span>Gacha</span>
       </button>
       <button class="nav-btn" data-tab="journal">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+        </svg>
         <span>Journal</span>
       </button>
     </nav>
+
   </div>
 
-  <!-- Toast Notification -->
+  <!-- Toast Notification Pop-up -->
   <div id="toast" class="toast"></div>
 
   <script src="app.js"></script>
 </body>
 </html>
-
