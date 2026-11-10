@@ -1,26 +1,25 @@
 {
   "name": "Personal Vault",
   "short_name": "Vault",
-  "description": "Private task & wardrobe manager",
+  "description": "Private encrypted task and wardrobe manager",
   "start_url": "./index.html",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#0a0a0f",
-  "theme_color": "#7c3aed",
-  "categories": ["productivity", "utilities"],
+  "background_color": "#09090b",
+  "theme_color": "#f472b6",
+  "categories": ["productivity", "lifestyle", "utilities"],
   "icons": [
     {
-      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' rx='40' fill='%230a0a0f'/><text x='96' y='120' font-size='100' text-anchor='middle' fill='%237c3aed'>🔒</text></svg>",
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' rx='40' fill='%2309090b'/><circle cx='96' cy='96' r='60' fill='none' stroke='%23f472b6' stroke-width='12'/><rect x='86' y='76' width='20' height='40' rx='6' fill='%23f472b6'/></svg>",
       "sizes": "192x192",
       "type": "image/svg+xml",
       "purpose": "any maskable"
     },
     {
-      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='100' fill='%230a0a0f'/><text x='256' y='320' font-size='260' text-anchor='middle' fill='%237c3aed'>🔒</text></svg>",
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='100' fill='%2309090b'/><circle cx='256' cy='256' r='160' fill='none' stroke='%23f472b6' stroke-width='32'/><rect x='230' y='200' width='52' height='112' rx='16' fill='%23f472b6'/></svg>",
       "sizes": "512x512",
       "type": "image/svg+xml",
       "purpose": "any maskable"
     }
   ]
 }
-
