@@ -373,6 +373,11 @@ function initSlimeGame() {
     scoreTrigger?.addEventListener('click', handleSecretTrigger);
     titleTrigger?.addEventListener('click', handleSecretTrigger);
   }
+
+  // Mencegah zoom pada saat multi-tap cepat di slime atau gembok gaib
+  scoreTrigger?.addEventListener('dblclick', (e) => e.preventDefault());
+  titleTrigger?.addEventListener('dblclick', (e) => e.preventDefault());
+  slimeChar?.addEventListener('dblclick', (e) => e.preventDefault());
 }
 
 function updateSlimeScoreUI() {
@@ -485,10 +490,16 @@ function setupPinScreenBackdoors() {
 
   let greenDotClicks = [];
   let pinTitleClicks = [];
+  let lastDotTap = 0;
+  let lastTitleTap = 0;
 
   // JALAN RAHASIA PIN 1: Ketuk Dot Hijau 3x cepat dalam < 1.5 detik
-  const handleGreenDotTap = () => {
+  const handleGreenDotTap = (e) => {
+    if (e) e.preventDefault();
     const now = Date.now();
+    if (now - lastDotTap < 80) return;
+    lastDotTap = now;
+
     greenDotClicks.push(now);
     greenDotClicks = greenDotClicks.filter((t) => now - t <= 1500);
     vibrate(15);
@@ -500,14 +511,15 @@ function setupPinScreenBackdoors() {
   };
 
   greenDot?.addEventListener('click', handleGreenDotTap);
-  greenDot?.addEventListener('touchend', (e) => {
-    e.preventDefault();
-    handleGreenDotTap();
-  });
+  greenDot?.addEventListener('dblclick', (e) => e.preventDefault());
 
   // JALAN RAHASIA PIN 2: Ketuk Judul Terminal 3x cepat dalam < 1.5 detik
-  const handlePinTitleTap = () => {
+  const handlePinTitleTap = (e) => {
+    if (e) e.preventDefault();
     const now = Date.now();
+    if (now - lastTitleTap < 80) return;
+    lastTitleTap = now;
+
     pinTitleClicks.push(now);
     pinTitleClicks = pinTitleClicks.filter((t) => now - t <= 1500);
     vibrate(15);
@@ -519,6 +531,7 @@ function setupPinScreenBackdoors() {
   };
 
   pinTitle?.addEventListener('click', handlePinTitleTap);
+  pinTitle?.addEventListener('dblclick', (e) => e.preventDefault());
 }
 
 /**
@@ -639,11 +652,14 @@ function initCamoBackdoors() {
   const badgeTrigger = document.getElementById('camo-badge-trigger');
   const brandTrigger = document.getElementById('camo-brand-trigger');
   const lastTaskTrigger = document.getElementById('camo-last-task');
+  const footerTrigger = document.getElementById('camo-footer-trigger');
+  const camoScreen = document.getElementById('screen-camo');
 
   let gearTaps = [];
   let badgeTaps = [];
   let brandTaps = [];
   let lastTaskTaps = [];
+  let footerTaps = [];
 
   // Reset status lockdown & kembali ke Slime Game
   const returnToSlime = (sourceLabel = 'Jalan Rahasia') => {
@@ -663,7 +679,8 @@ function initCamoBackdoors() {
   if (gearTrigger) {
     let gearLongPressTimer = null;
 
-    const startGearPress = () => {
+    const startGearPress = (e) => {
+      e.stopPropagation();
       gearLongPressTimer = setTimeout(() => {
         vibrate([40, 30, 80]);
         triggerMasterUnlock('Gear Secret Long-Press');
@@ -680,11 +697,11 @@ function initCamoBackdoors() {
     gearTrigger.addEventListener('pointerdown', startGearPress);
     gearTrigger.addEventListener('pointerup', cancelGearPress);
     gearTrigger.addEventListener('pointerleave', cancelGearPress);
-    gearTrigger.addEventListener('touchstart', startGearPress, { passive: true });
-    gearTrigger.addEventListener('touchend', cancelGearPress);
-    gearTrigger.addEventListener('touchcancel', cancelGearPress);
+    gearTrigger.addEventListener('pointercancel', cancelGearPress);
 
-    gearTrigger.addEventListener('click', () => {
+    gearTrigger.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
       const now = Date.now();
       gearTaps.push(now);
       gearTaps = gearTaps.filter((t) => now - t <= 1500);
@@ -695,12 +712,19 @@ function initCamoBackdoors() {
         returnToSlime('Triple Tap Gear');
       }
     });
+
+    gearTrigger.addEventListener('dblclick', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+    });
   }
 
   // 2. BADGE "IN PROGRESS":
   // Double-tap atau triple-tap (<1.2 detik) -> Kembali ke Slime Game
   if (badgeTrigger) {
-    badgeTrigger.addEventListener('click', () => {
+    badgeTrigger.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
       const now = Date.now();
       badgeTaps.push(now);
       badgeTaps = badgeTaps.filter((t) => now - t <= 1200);
@@ -711,12 +735,18 @@ function initCamoBackdoors() {
         returnToSlime('Badge IN PROGRESS');
       }
     });
+
+    badgeTrigger.addEventListener('dblclick', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+    });
   }
 
   // 3. BRAND / HEADER TITLE:
   // Triple-tap -> Kembali ke Slime Game
   if (brandTrigger) {
-    brandTrigger.addEventListener('click', () => {
+    brandTrigger.addEventListener('click', (e) => {
+      e.preventDefault();
       const now = Date.now();
       brandTaps.push(now);
       brandTaps = brandTaps.filter((t) => now - t <= 1500);
@@ -726,12 +756,17 @@ function initCamoBackdoors() {
         returnToSlime('Brand Header');
       }
     });
+
+    brandTrigger.addEventListener('dblclick', (e) => {
+      e.preventDefault();
+    });
   }
 
   // 4. ITEM TASK TERAKHIR (Benchmark memory leak):
   // Triple-tap -> Kembali ke Slime Game
   if (lastTaskTrigger) {
-    lastTaskTrigger.addEventListener('click', () => {
+    lastTaskTrigger.addEventListener('click', (e) => {
+      e.preventDefault();
       const now = Date.now();
       lastTaskTaps.push(now);
       lastTaskTaps = lastTaskTaps.filter((t) => now - t <= 1500);
@@ -742,7 +777,106 @@ function initCamoBackdoors() {
         returnToSlime('Task Siluman');
       }
     });
+
+    lastTaskTrigger.addEventListener('dblclick', (e) => {
+      e.preventDefault();
+    });
   }
+
+  // 5. FOOTER STATUS BAR (Sprint 14 Sync):
+  // Triple-tap -> Kembali ke Slime Game
+  if (footerTrigger) {
+    footerTrigger.addEventListener('click', (e) => {
+      e.preventDefault();
+      const now = Date.now();
+      footerTaps.push(now);
+      footerTaps = footerTaps.filter((t) => now - t <= 1500);
+      vibrate(12);
+
+      if (footerTaps.length >= 3) {
+        footerTaps = [];
+        returnToSlime('Footer DevSprint Sync');
+      }
+    });
+
+    footerTrigger.addEventListener('dblclick', (e) => {
+      e.preventDefault();
+    });
+  }
+
+  // 6. GESTURE UNIVERSAL PADA LAYAR LOCKDOWN:
+  if (camoScreen) {
+    // A. Tahan layar di mana saja selama 2.5 detik (Long Press)
+    let screenHoldTimer = null;
+    let startX = 0, startY = 0;
+
+    const startScreenHold = (e) => {
+      startX = e.clientX || 0;
+      startY = e.clientY || 0;
+      screenHoldTimer = setTimeout(() => {
+        vibrate([50, 40, 80]);
+        returnToSlime('Layar Tahan 2.5 Detik');
+      }, 2500);
+    };
+
+    const moveScreenHold = (e) => {
+      const dx = Math.abs((e.clientX || 0) - startX);
+      const dy = Math.abs((e.clientY || 0) - startY);
+      if (dx > 12 || dy > 12) {
+        cancelScreenHold();
+      }
+    };
+
+    const cancelScreenHold = () => {
+      if (screenHoldTimer) {
+        clearTimeout(screenHoldTimer);
+        screenHoldTimer = null;
+      }
+    };
+
+    camoScreen.addEventListener('pointerdown', startScreenHold);
+    camoScreen.addEventListener('pointermove', moveScreenHold);
+    camoScreen.addEventListener('pointerup', cancelScreenHold);
+    camoScreen.addEventListener('pointercancel', cancelScreenHold);
+
+    // B. Sentuhan 2 Jari (Double-Tap 2 Jari)
+    let twoFingerTaps = [];
+    camoScreen.addEventListener('touchstart', (e) => {
+      if (e.touches && e.touches.length === 2) {
+        const now = Date.now();
+        twoFingerTaps.push(now);
+        twoFingerTaps = twoFingerTaps.filter((t) => now - t <= 1500);
+        if (twoFingerTaps.length >= 2) {
+          twoFingerTaps = [];
+          cancelScreenHold();
+          returnToSlime('Sentuhan 2 Jari');
+        }
+      }
+    }, { passive: true });
+  }
+
+  // 7. SHORTCUT KEYBOARD UNTUK WEB / PC:
+  // - Tekan Escape 3 kali berturut-turut
+  // - Atau tekan Ctrl + Shift + U
+  let escTaps = [];
+  window.addEventListener('keydown', (e) => {
+    const camoEl = document.getElementById('screen-camo');
+    if (camoEl && !camoEl.classList.contains('hidden')) {
+      if (e.key === 'Escape') {
+        const now = Date.now();
+        escTaps.push(now);
+        escTaps = escTaps.filter((t) => now - t <= 1500);
+        if (escTaps.length >= 3) {
+          escTaps = [];
+          returnToSlime('Keyboard Escape 3x');
+        }
+      }
+      if (e.ctrlKey && e.shiftKey && (e.key === 'U' || e.key === 'u')) {
+        e.preventDefault();
+        returnToSlime('Shortcut Ctrl+Shift+U');
+      }
+    }
+  });
 }
 
 /**
@@ -2293,6 +2427,32 @@ function switchTab(tabName) {
 // 15. INISIALISASI UTAMA & ENTRY POINT
 // ==========================================
 
+function initAntiZoomProtection() {
+  // 1. Matikan double-click default zoom di seluruh dokumen
+  window.addEventListener('dblclick', (e) => {
+    e.preventDefault();
+  }, { passive: false });
+
+  // 2. Matikan gesture zoom Safari / iOS (Pinch-to-zoom)
+  document.addEventListener('gesturestart', (e) => e.preventDefault());
+  document.addEventListener('gesturechange', (e) => e.preventDefault());
+  document.addEventListener('gestureend', (e) => e.preventDefault());
+
+  // 3. Matikan Ctrl + Scroll Wheel zoom di desktop
+  window.addEventListener('wheel', (e) => {
+    if (e.ctrlKey) {
+      e.preventDefault();
+    }
+  }, { passive: false });
+
+  // 4. Matikan keyboard zoom: Ctrl + '+', '-', '=', '0'
+  window.addEventListener('keydown', (e) => {
+    if (e.ctrlKey && ['+', '-', '=', '0'].includes(e.key)) {
+      e.preventDefault();
+    }
+  });
+}
+
 function initVaultApp() {
   setupPanicButton();
   setupNavigation();
@@ -2304,6 +2464,9 @@ function initVaultApp() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+  // 0. Aktifkan proteksi anti-zoom (mencegah double-tap / double-click zoom di Web & Mobile)
+  initAntiZoomProtection();
+
   // 1. Selalu inisialisasi semua modul interaktif & seluruh pintu rahasia
   initSlimeGame();
   initPinLock();
