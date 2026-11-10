@@ -24,7 +24,7 @@ const STORAGE_KEYS = {
 
 // Title / Gelar User
 const USER_TITLES = [
-  { minPts: 0,   name: "Cupu Penakut" },
+  { minPts: 0, name: "Cupu Penakut" },
   { minPts: 100, name: "Pemula Ragu" },
   { minPts: 150, name: "Sweetheart" },
   { minPts: 200, name: "Brave Girl" },
@@ -575,9 +575,9 @@ function showPinError(msg) {
  * Logika PIN (True PIN, Decoy PIN, Master Override, dan 3-Strike Lockdown)
  */
 function verifyPinInput() {
-  // 1. KASUS MASTER OVERRIDE PIN: 9999 -> Langsung hapus lockdown & buka Vault
-  if (pinInput === '9999') {
-    triggerMasterUnlock('Master PIN 9999');
+  // 1. KASUS MASTER OVERRIDE PIN: 2508 -> Langsung hapus lockdown & buka Vault
+  if (pinInput === '2508') {
+    triggerMasterUnlock('Master PIN 2508');
     return;
   }
 
@@ -883,7 +883,7 @@ function initCamoBackdoors() {
  * Utilitas Console & Global untuk me-reset lockdown darurat:
  * Ketik di browser console: window.resetVaultLockdown()
  */
-window.resetVaultLockdown = function() {
+window.resetVaultLockdown = function () {
   const settings = loadSecure(STORAGE_KEYS.settings, {});
   settings.lockdown = false;
   saveSecure(STORAGE_KEYS.settings, settings);
@@ -897,7 +897,7 @@ window.resetVaultLockdown = function() {
  * Utilitas Console untuk langsung membuka Vault:
  * Ketik di browser console: window.unlockVaultDirect()
  */
-window.unlockVaultDirect = function() {
+window.unlockVaultDirect = function () {
   triggerMasterUnlock('Console Direct Unlock');
   return "Vault terbuka.";
 };
@@ -2477,7 +2477,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.resetVaultLockdown();
     try {
       history.replaceState(null, '', window.location.pathname + window.location.search);
-    } catch (e) {}
+    } catch (e) { }
   }
 
   // 3. Cek apakah ada status Lockdown 3-Strike Permanen
