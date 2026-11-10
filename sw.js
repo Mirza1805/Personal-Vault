@@ -1,9 +1,9 @@
 // =============================================================================
-// Personal Vault - Service Worker (sw.js)
+// Guard Slime Clicker / Personal Vault - Service Worker (sw.js)
 // Progressive Web App Offline Caching (Cache-First dengan Network Fallback)
 // =============================================================================
 
-const CACHE_NAME = 'personal-vault-v3';
+const CACHE_NAME = 'guard-slime-vault-v4';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -21,7 +21,7 @@ self.addEventListener('install', (event) => {
   );
 });
 
-// Event: Activate - Hapus cache versi lama secara otomatis
+// Event: Activate - Bersihkan cache versi terdahulu
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keyList) => {
@@ -38,7 +38,13 @@ self.addEventListener('activate', (event) => {
 
 // Event: Fetch - Strategi Cache-First dengan fallback network
 self.addEventListener('fetch', (event) => {
+  // Hanya proses request bertipe GET
   if (event.request.method !== 'GET') return;
+
+  // Jangan cache permintaan ke API eksternal (misal GitHub API)
+  if (event.request.url.includes('api.github.com')) {
+    return;
+  }
 
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {

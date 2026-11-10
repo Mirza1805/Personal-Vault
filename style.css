@@ -1,7 +1,6 @@
 /* =============================================================================
-   Personal Vault — style.css
-   Dynamic Theming: Stealth IT Monospace (Default) -> Feminine Lilac/Rose (Unlocked)
-   Gamifikasi Dare Mode & Sistem Hukuman Savage Modal
+   Guard Slime Clicker & Personal Vault — style.css
+   Dynamic Theming: Plausible Deniability Slime Game -> Terminal -> Feminine Vault
    ============================================================================= */
 
 /* === 1. CSS VARIABLES === */
@@ -21,6 +20,8 @@
   --text-primary: #f4f4f5;
   --text-secondary: #a1a1aa;
   --text-muted: #52525b;
+  --slime-green: #10b981;
+  --slime-glow: rgba(16, 185, 129, 0.35);
   --success: #10b981;
   --danger: #ef4444;
   --warning: #f59e0b;
@@ -35,7 +36,7 @@
   --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
 }
 
-/* Feminine Mode (Diaktifkan saat PIN Terbuka via body.feminine-theme) */
+/* Feminine Mode (Diaktifkan saat TRUE PIN 0290 Unlocked via body.feminine-theme) */
 body.feminine-theme {
   --bg-primary: #0f0a14;
   --bg-secondary: #181122;
@@ -86,20 +87,197 @@ body {
   transition: background-color 0.35s ease, color 0.35s ease;
 }
 
-.screen {
+.screen-view {
   width: 100%;
   height: 100%;
   position: fixed;
   top: 0;
   left: 0;
+  overflow: hidden;
+}
+
+/* Manipulasi Class .hidden */
+.hidden {
+  display: none !important;
 }
 
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 4px; }
 
-/* === 3. STEALTH LOCK SCREEN === */
-#pin-screen {
+/* === 3. INVISIBLE UI: GUARD SLIME CLICKER GAME === */
+#screen-slime {
+  background: radial-gradient(circle at 50% 30%, #111827 0%, #09090b 80%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.slime-game-container {
+  width: 100%;
+  max-width: 420px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 24px 20px calc(24px + var(--safe-bottom));
+}
+
+.slime-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.slime-title-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.game-badge {
+  font-size: 10px;
+  background: rgba(16, 185, 129, 0.2);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.4);
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  width: fit-content;
+}
+.game-title {
+  font-size: 17px;
+  font-weight: 800;
+  color: #f4f4f5;
+  letter-spacing: -0.3px;
+}
+
+/* GEMBOK GAIB TRIGGER (Score Box) */
+.slime-score-box {
+  background: #181820;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 8px 16px;
+  border-radius: var(--radius);
+  text-align: right;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.slime-score-box:active {
+  transform: scale(0.96);
+  background: #22222e;
+}
+.score-label {
+  display: block;
+  font-size: 10px;
+  text-transform: uppercase;
+  color: #a1a1aa;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+.score-number {
+  font-size: 20px;
+  color: #34d399;
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 800;
+}
+
+.slime-stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.slime-character-wrap {
+  width: 190px;
+  height: 190px;
+  cursor: pointer;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: slimeFloat 2.6s ease-in-out infinite alternate;
+}
+@keyframes slimeFloat {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-12px); }
+}
+
+.slime-character-wrap:active {
+  transform: scale(0.92) scaleY(0.85);
+  transition: transform 0.08s;
+}
+
+.slime-svg {
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 10px 24px rgba(16, 185, 129, 0.35));
+}
+
+.slime-shadow {
+  position: absolute;
+  bottom: 6px;
+  width: 140px;
+  height: 14px;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 50%;
+  filter: blur(4px);
+  z-index: -1;
+  animation: shadowPulse 2.6s ease-in-out infinite alternate;
+}
+@keyframes shadowPulse {
+  0% { transform: scale(1); opacity: 0.5; }
+  100% { transform: scale(0.8); opacity: 0.3; }
+}
+
+.slime-prompt {
+  font-size: 12px;
+  color: #71717a;
+  margin-top: 24px;
+  letter-spacing: 0.3px;
+}
+
+/* Float-up score particle */
+.slime-particle {
+  position: absolute;
+  color: #34d399;
+  font-weight: 800;
+  font-size: 18px;
+  pointer-events: none;
+  animation: floatUpFade 0.75s ease-out forwards;
+}
+@keyframes floatUpFade {
+  0% { transform: translateY(0) scale(1); opacity: 1; }
+  100% { transform: translateY(-50px) scale(1.2); opacity: 0; }
+}
+
+.slime-footer {
+  width: 100%;
+}
+.slime-stats-card {
+  background: #13131a;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius);
+  padding: 12px 18px;
+  display: flex;
+  justify-content: space-around;
+  text-align: center;
+}
+.stat-col small {
+  display: block;
+  font-size: 10px;
+  color: #71717a;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+.stat-col strong {
+  font-size: 14px;
+  color: #f4f4f5;
+}
+
+/* === 4. STEALTH PIN LOCK SCREEN === */
+#screen-pin {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -255,8 +433,8 @@ body {
   letter-spacing: 0.5px;
 }
 
-/* === 4. CAMOUFLAGE / PANIC SCREEN === */
-#camo-screen {
+/* === 5. CAMOUFLAGE / PANIC SCREEN === */
+#screen-camo {
   background: #141416;
   overflow-y: auto;
   z-index: 90;
@@ -331,8 +509,8 @@ body {
 .camo-text small { font-size: 11px; color: #71717a; }
 .camo-item.done strong { text-decoration: line-through; color: #646470; }
 
-/* === 5. MAIN APP HEADER & GLOBAL PROGRESS === */
-#main-app {
+/* === 6. MAIN VAULT SCREEN === */
+#screen-vault {
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -442,7 +620,7 @@ body {
 }
 .progress-wrap:hover .progress-text { opacity: 1; }
 
-/* Cooldown Banner (Hukuman 12 Jam) */
+/* Cooldown 3 Jam Banner */
 .cooldown-banner {
   background: linear-gradient(90deg, rgba(239, 68, 68, 0.2), rgba(239, 68, 68, 0.1));
   border-bottom: 1px solid rgba(239, 68, 68, 0.4);
@@ -498,7 +676,7 @@ body {
   margin-top: 2px;
 }
 
-/* === 6. CARD & FORM COMPONENTS === */
+/* === 7. CARDS & FORMS === */
 .card {
   background: var(--bg-card);
   border: 1px solid var(--border);
@@ -516,7 +694,6 @@ body {
   color: var(--text-primary);
   margin-bottom: 14px;
 }
-
 .form-row { margin-bottom: 12px; }
 
 .form-grid-2 {
@@ -534,6 +711,12 @@ body {
   margin-bottom: 6px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+}
+.field-help {
+  font-size: 10px;
+  color: var(--text-muted);
+  display: block;
+  margin-top: 4px;
 }
 
 .input-field {
@@ -667,7 +850,7 @@ body {
   display: block;
 }
 
-/* === 7. MULTI-CATEGORY CHECKLIST === */
+/* === 8. CHECKLIST MULTI-CATEGORY === */
 .btn-create-category {
   padding: 8px 14px;
   background: var(--bg-card);
@@ -847,7 +1030,7 @@ body {
 }
 .btn-add-item:active { transform: scale(0.92); }
 
-/* === 8. WARDROBE GACHA & TEASING SYSTEM === */
+/* === 9. WARDROBE GACHA & RPG LOADOUTS === */
 .gacha-card { text-align: center; }
 
 .gacha-mode-header {
@@ -987,7 +1170,6 @@ body {
   padding: 4px 12px;
   border-radius: var(--radius-pill);
 }
-
 .pembalut-status.wajib {
   background: rgba(244, 63, 94, 0.18);
   color: #fb7185;
@@ -998,7 +1180,6 @@ body {
   0%, 100% { box-shadow: 0 0 4px rgba(244, 63, 94, 0.3); }
   50% { box-shadow: 0 0 14px rgba(244, 63, 94, 0.6); }
 }
-
 .pembalut-status.aman {
   background: rgba(16, 185, 129, 0.15);
   color: #34d399;
@@ -1063,7 +1244,92 @@ body {
   to { box-shadow: 0 0 30px var(--accent-glow); }
 }
 
-/* Wardrobe Inventory List */
+/* RPG LOADOUT CARDS */
+.loadout-cards-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.loadout-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px;
+  box-shadow: var(--card-shadow);
+  transition: border-color 0.2s;
+}
+.loadout-card:hover { border-color: var(--border-accent); }
+
+.loadout-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+.loadout-name-title {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+.loadout-items-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+.loadout-item-badge {
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  padding: 6px 8px;
+  border-radius: var(--radius-sm);
+  font-size: 11px;
+}
+.loadout-item-badge span {
+  display: block;
+  font-size: 9px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+.loadout-item-badge strong {
+  color: var(--text-primary);
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.loadout-card-actions {
+  display: flex;
+  gap: 8px;
+}
+.btn-equip-loadout {
+  flex: 1;
+  padding: 8px 12px;
+  background: var(--accent-gradient);
+  border: none;
+  border-radius: var(--radius-sm);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.1s;
+}
+.btn-equip-loadout:active { transform: scale(0.97); }
+
+.btn-del-loadout {
+  padding: 8px 12px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  font-size: 13px;
+  cursor: pointer;
+}
+.btn-del-loadout:active { color: var(--danger); }
+
+/* Wardrobe Inventory */
 .filter-gender-group { display: flex; gap: 4px; }
 .filter-pill {
   padding: 4px 10px;
@@ -1086,7 +1352,6 @@ body {
   flex-direction: column;
   gap: 12px;
 }
-
 .wardrobe-cat-group {
   background: var(--bg-card);
   border: 1px solid var(--border);
@@ -1144,19 +1409,17 @@ body {
 }
 .wardrobe-del-btn:active { color: var(--danger); }
 
-/* === 9. DARE MODE (GAMIFIKASI & TIMER ANTI-CURANG) === */
+/* === 10. DARE MODE (GAMIFIKASI & TIMER ANTI-CURANG) === */
 .dare-profile-card {
   padding: 14px 16px;
   background: linear-gradient(135deg, var(--bg-secondary), var(--bg-card));
   border: 1px solid var(--border-accent);
 }
-
 .profile-meta {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
 }
-
 .points-badge, .title-badge {
   display: flex;
   align-items: center;
@@ -1227,7 +1490,6 @@ body {
   border-color: var(--border-accent);
   box-shadow: 0 0 24px var(--accent-glow);
 }
-
 .dare-active-header {
   display: flex;
   align-items: center;
@@ -1357,7 +1619,63 @@ body {
 }
 .btn-surrender:active { background: rgba(239, 68, 68, 0.15); }
 
-/* === 10. SAVAGE POPUP MODAL (HUKUMAN LAPIS 4) === */
+/* === 11. GITHUB STEGANOGRAPHY BACKUP === */
+.backup-desc {
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin-bottom: 14px;
+}
+.backup-desc code {
+  background: var(--bg-input);
+  padding: 2px 6px;
+  border-radius: 4px;
+  color: var(--accent);
+  font-family: monospace;
+}
+
+.backup-actions-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 14px;
+  margin-bottom: 16px;
+}
+
+.backup-status-box {
+  background: #111118;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+}
+.status-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #71717a;
+}
+.status-dot.active { background: #10b981; box-shadow: 0 0 8px #10b981; }
+.status-dot.error { background: #ef4444; box-shadow: 0 0 8px #ef4444; }
+.status-header strong { font-size: 12px; color: var(--text-primary); }
+
+.status-log {
+  font-size: 11px;
+  font-family: monospace;
+  color: #a1a1aa;
+  white-space: pre-wrap;
+  word-break: break-all;
+  max-height: 100px;
+  overflow-y: auto;
+  line-height: 1.4;
+}
+
+/* === 12. SAVAGE POPUP MODAL (HUKUMAN 3 JAM) === */
 .savage-modal {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
@@ -1496,7 +1814,7 @@ body {
   color: #a1a1aa;
 }
 
-/* === 11. COMFORT JOURNAL === */
+/* === 13. COMFORT JOURNAL === */
 .rating-selection-row {
   display: flex;
   align-items: center;
@@ -1591,7 +1909,7 @@ body {
   text-align: right;
 }
 
-/* === 12. BOTTOM NAVIGATION === */
+/* === 14. BOTTOM NAVIGATION === */
 .bottom-nav {
   position: fixed;
   bottom: 0; left: 0; right: 0;
@@ -1614,10 +1932,10 @@ body {
   background: none;
   border: none;
   color: var(--text-muted);
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700;
   cursor: pointer;
-  padding: 6px 14px;
+  padding: 6px 10px;
   border-radius: var(--radius-sm);
   transition: all 0.2s;
   font-family: inherit;
@@ -1630,7 +1948,7 @@ body {
   filter: drop-shadow(0 0 6px var(--accent-glow));
 }
 
-/* === 13. TOAST POPUP === */
+/* === 15. TOAST POPUP === */
 .toast {
   position: fixed;
   bottom: calc(var(--nav-h) + var(--safe-bottom) + 16px);
@@ -1666,7 +1984,7 @@ body {
   font-style: italic;
 }
 
-/* Responsive Desktop Screen */
+/* Responsive Large Screens */
 @media (min-width: 600px) {
   .journal-cards-container {
     display: grid;

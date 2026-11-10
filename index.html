@@ -6,33 +6,97 @@
   <meta name="theme-color" content="#09090b">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="description" content="Personal Vault - Private Utility, Wardrobe Randomizer & Gamified Dare Tracker">
-  <title>Personal Vault</title>
+  <meta name="description" content="Guard Slime Clicker - Fun casual mini-game">
+  <title>Guard Slime Clicker</title>
   <link rel="manifest" href="manifest.json">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-  <!-- ============================================ -->
-  <!-- 1. STEALTH LOCK SCREEN (NETRAL / IT TERMINAL)-->
-  <!-- ============================================ -->
-  <div id="pin-screen" class="screen">
+  <!-- ======================================================== -->
+  <!-- 1. INVISIBLE UI: GUARD SLIME CLICKER GAME (LAYAR AWAL)   -->
+  <!-- ======================================================== -->
+  <div id="screen-slime" class="screen-view">
+    <div class="slime-game-container">
+      <header class="slime-header">
+        <div class="slime-title-wrap">
+          <span class="game-badge">MINI-GAME</span>
+          <h1 class="game-title">Guard Slime Clicker</h1>
+        </div>
+        <!-- GEMBOK GAIB: Ketuk teks 'Score' 5x dalam <2 detik untuk membuka PIN Lock -->
+        <div id="slime-score-trigger" class="slime-score-box" title="Slime Score">
+          <span class="score-label">Score</span>
+          <strong class="score-number" id="slime-score-val">0</strong>
+        </div>
+      </header>
+
+      <div class="slime-stage">
+        <div class="slime-character-wrap" id="slime-character">
+          <svg class="slime-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="slimeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#34d399" />
+                <stop offset="100%" stop-color="#059669" />
+              </linearGradient>
+              <filter id="slimeGlow" x="-20%" y="-20%" width="140%" height="140%">
+                <feGaussianBlur stdDeviation="8" result="blur" />
+                <feComposite in="SourceGraphic" in2="blur" operator="over" />
+              </filter>
+            </defs>
+            <path class="slime-body" d="M100,30 C45,30 25,75 25,120 C25,165 55,175 100,175 C145,175 175,165 175,120 C175,75 155,30 100,30 Z" fill="url(#slimeGrad)" filter="url(#slimeGlow)"/>
+            <!-- Cute Eyes -->
+            <ellipse cx="75" cy="105" rx="12" ry="16" fill="#ffffff" />
+            <ellipse cx="125" cy="105" rx="12" ry="16" fill="#ffffff" />
+            <circle cx="78" cy="107" r="7" fill="#064e3b" />
+            <circle cx="128" cy="107" r="7" fill="#064e3b" />
+            <circle cx="82" cy="102" r="3" fill="#ffffff" />
+            <circle cx="132" cy="102" r="3" fill="#ffffff" />
+            <!-- Blush -->
+            <ellipse cx="58" cy="125" rx="8" ry="4" fill="rgba(244, 114, 182, 0.45)" />
+            <ellipse cx="142" cy="125" rx="8" ry="4" fill="rgba(244, 114, 182, 0.45)" />
+            <!-- Smiling Mouth -->
+            <path d="M92,128 Q100,138 108,128" stroke="#064e3b" stroke-width="4" fill="none" stroke-linecap="round"/>
+          </svg>
+          <div class="slime-shadow"></div>
+        </div>
+        <p class="slime-prompt">Tap the slime to train your guard!</p>
+      </div>
+
+      <footer class="slime-footer">
+        <div class="slime-stats-card">
+          <div class="stat-col">
+            <small>Slime Power</small>
+            <strong id="slime-power-val">Lv. 1</strong>
+          </div>
+          <div class="stat-col">
+            <small>Tap Multiplier</small>
+            <strong>+1 / Click</strong>
+          </div>
+        </div>
+      </footer>
+    </div>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- 2. PIN LOCK SCREEN (DECOY PIN & 3-STRIKE LOCKDOWN)       -->
+  <!-- ======================================================== -->
+  <div id="screen-pin" class="screen-view hidden">
     <div class="pin-terminal">
       <div class="terminal-header">
         <span class="terminal-dot red"></span>
         <span class="terminal-dot yellow"></span>
         <span class="terminal-dot green"></span>
-        <span class="terminal-title">AUTH_GATEWAY // v2.5</span>
+        <span class="terminal-title">AUTH_GATEWAY // v3.0</span>
       </div>
 
       <div class="terminal-body">
         <div class="terminal-prompt">
-          <span class="prompt-user">user@vault</span>:<span class="prompt-path">~#</span>
-          <span class="prompt-action">verify-identity</span>
+          <span class="prompt-user">system@vault</span>:<span class="prompt-path">~#</span>
+          <span class="prompt-action">verify-passcode</span>
         </div>
-        <p class="pin-subtitle">SYSTEM SECURED • ENTER 4-DIGIT PASSCODE</p>
+        <p class="pin-subtitle">SYSTEM RESTRICTED • ENTER 4-DIGIT PIN</p>
 
-        <!-- Indicator Bulatan PIN -->
+        <!-- PIN Dots Indicator -->
         <div class="pin-dots" id="pin-dots">
           <span class="dot"></span>
           <span class="dot"></span>
@@ -62,21 +126,21 @@
             </svg>
           </button>
         </div>
-        <div class="stealth-footer">STORAGE: ENCRYPTED • AUTO-LOCK: 3 MIN</div>
+        <div class="stealth-footer">SECURITY: 3-STRIKE LOCKDOWN POLICY ENFORCED</div>
       </div>
     </div>
   </div>
 
-  <!-- ============================================ -->
-  <!-- 2. CAMOUFLAGE / PANIC SCREEN (CODING TASKS)  -->
-  <!-- ============================================ -->
-  <div id="camo-screen" class="screen" style="display: none;">
+  <!-- ======================================================== -->
+  <!-- 3. CAMOUFLAGE / DUMMY SCREEN: "CODING TASKS"             -->
+  <!-- ======================================================== -->
+  <div id="screen-camo" class="screen-view hidden">
     <header class="camo-header">
       <div class="camo-brand">
         <span class="camo-icon">⚙️</span>
         <div>
           <h1>DevSprint Workspace</h1>
-          <small>Sprint 14: Core Services & Infrastructure</small>
+          <small>Sprint 14: Core Services &amp; Bugfixes</small>
         </div>
       </div>
       <span class="camo-badge">IN PROGRESS</span>
@@ -134,10 +198,10 @@
     </div>
   </div>
 
-  <!-- ============================================ -->
-  <!-- 3. MAIN APP (DYNAMIC FEMININE THEME)         -->
-  <!-- ============================================ -->
-  <div id="main-app" class="screen" style="display: none;">
+  <!-- ======================================================== -->
+  <!-- 4. MAIN VAULT SCREEN (TRUE PIN 0290 UNLOCKED)            -->
+  <!-- ======================================================== -->
+  <div id="screen-vault" class="screen-view hidden">
 
     <!-- Header dengan Panic Trigger (Double-Click / Double-Tap) -->
     <header id="app-header">
@@ -147,8 +211,8 @@
           <h1>Personal Vault</h1>
         </div>
         <div class="header-actions">
-          <button id="btn-lock-manual" class="lock-manual-btn" title="Kunci Sekarang" aria-label="Lock app">🔐</button>
-          <button id="panic-indicator" class="panic-btn" title="Double tap header to camouflage" aria-label="Panic switch">
+          <button id="btn-lock-manual" class="lock-manual-btn" title="Kunci Kembali ke Slime Game" aria-label="Lock app">🔐</button>
+          <button id="panic-indicator" class="panic-btn" title="Double-tap header to panic camouflage" aria-label="Panic switch">
             <span class="panic-pulse"></span>
             🛡️
           </button>
@@ -162,16 +226,16 @@
       <span class="progress-text" id="progress-text">0%</span>
     </div>
 
-    <!-- Cooldown Warning Banner (Muncul jika sedang dihukum 12 jam) -->
+    <!-- Cooldown Warning Banner (Hukuman 3 Jam) -->
     <div id="cooldown-banner" class="cooldown-banner" style="display: none;">
       <span class="cooldown-icon">⛔</span>
       <div class="cooldown-info">
-        <strong>COOLDOWN HUKUMAN NYERAH AKTIF</strong>
-        <p>Gacha & Dare di-lock selama: <span id="cooldown-countdown">--:--:--</span></p>
+        <strong>COOLDOWN HUKUMAN NYERAH AKTIF (3 JAM)</strong>
+        <p>Gacha &amp; Dare di-lock: <span id="cooldown-countdown">--:--:--</span></p>
       </div>
     </div>
 
-    <!-- Main Scrollable Area -->
+    <!-- Main Scrollable Content Area -->
     <main id="app-main">
 
       <!-- ======================================== -->
@@ -181,7 +245,7 @@
         <div class="tab-header-row">
           <div>
             <h2 class="tab-heading">My Checklist</h2>
-            <p class="tab-sub">Tugas harian, weekend & kebutuhan belanja</p>
+            <p class="tab-sub">Tugas harian, weekend, belanja &amp; hukuman</p>
           </div>
           <button class="btn-create-category" id="btn-toggle-cat-form">+ Kategori</button>
         </div>
@@ -190,7 +254,7 @@
         <div id="new-category-box" class="card form-card collapse-card">
           <h3 class="form-title">✨ Buat Kategori Baru</h3>
           <div class="form-row">
-            <input type="text" id="input-cat-name" class="input-field" placeholder="Nama Kategori (mis: Perawatan Diri, Wishlist)..." maxlength="50">
+            <input type="text" id="input-cat-name" class="input-field" placeholder="Nama Kategori (mis: Belanja Bulanan, Tugas Kampus)..." maxlength="50">
           </div>
           <div class="form-row checkbox-row">
             <label class="custom-toggle">
@@ -198,8 +262,8 @@
               <span class="toggle-slider"></span>
             </label>
             <div class="toggle-label-group">
-              <strong>Kategori Daily (Auto-Reset)</strong>
-              <small>Semua tugas di kategori ini akan otomatis di-uncheck saat pergantian hari (00:00).</small>
+              <strong>Kategori Daily (Auto-Reset Harian)</strong>
+              <small>Semua tugas di kategori ini otomatis kembali uncheck saat berganti hari (00:00).</small>
             </div>
           </div>
           <div class="form-actions">
@@ -213,13 +277,13 @@
       </section>
 
       <!-- ======================================== -->
-      <!-- TAB 2: WARDROBE GACHA & TEASING SYSTEM   -->
+      <!-- TAB 2: WARDROBE GACHA & RPG LOADOUTS     -->
       <!-- ======================================== -->
       <section id="tab-wardrobe" class="tab-content">
         <div class="tab-header-row">
           <div>
-            <h2 class="tab-heading">Wardrobe Gacha</h2>
-            <p class="tab-sub">Acak pakaian rahasia & status pembalut</p>
+            <h2 class="tab-heading">Wardrobe &amp; Gacha</h2>
+            <p class="tab-sub">Randomizer outfit, status pembalut &amp; preset loadout RPG</p>
           </div>
         </div>
 
@@ -240,7 +304,7 @@
           </div>
 
           <div id="mode-hint-banner" class="mode-hint-banner">
-            Mode Cowok: Hanya mengacak pakaian cowok. Kerudung & pembalut dinonaktifkan.
+            Mode Cowok: Hanya mengacak pakaian cowok. Kerudung &amp; pembalut dinonaktifkan.
           </div>
 
           <!-- Gacha Display Slots Grid -->
@@ -286,11 +350,62 @@
           </button>
         </div>
 
+        <!-- ======================================== -->
+        <!-- RPG LOADOUT PRESETS (SETELAN CEPAT)      -->
+        <!-- ======================================== -->
+        <div class="section-group">
+          <div class="tab-header-row">
+            <div>
+              <h3 class="section-title">🎒 RPG Loadout System</h3>
+              <p class="tab-sub">Simpan setelan outfit favorit &amp; pakai langsung tanpa gacha</p>
+            </div>
+            <button class="btn-create-category" id="btn-toggle-loadout-form">+ Setelan</button>
+          </div>
+
+          <!-- Form Simpan Loadout Baru -->
+          <div id="new-loadout-box" class="card form-card collapse-card">
+            <h4 class="form-title">⚡ Buat Setelan Loadout Baru</h4>
+            <div class="form-row">
+              <label class="field-label">Nama Setelan:</label>
+              <input type="text" id="loadout-name" class="input-field" placeholder="mis: Stealth Coder, Cozy Nightwear, Secret Princess..." maxlength="40">
+            </div>
+            <div class="form-grid-2">
+              <div>
+                <label class="field-label">Top (Atasan):</label>
+                <select id="loadout-sel-top" class="input-field"></select>
+              </div>
+              <div>
+                <label class="field-label">Bottom (Bawahan):</label>
+                <select id="loadout-sel-bottom" class="input-field"></select>
+              </div>
+            </div>
+            <div class="form-grid-2">
+              <div>
+                <label class="field-label">Underwear (Daleman):</label>
+                <select id="loadout-sel-underwear" class="input-field"></select>
+              </div>
+              <div>
+                <label class="field-label">Kerudung (Opsional):</label>
+                <select id="loadout-sel-kerudung" class="input-field">
+                  <option value="">(Tanpa Kerudung)</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-actions">
+              <button class="btn-secondary" id="btn-cancel-loadout">Batal</button>
+              <button class="btn-primary" id="btn-save-loadout">Simpan Loadout</button>
+            </div>
+          </div>
+
+          <!-- Daftar Loadout Cards -->
+          <div id="loadout-cards-container" class="loadout-cards-container"></div>
+        </div>
+
         <!-- Tambah Pakaian Baru -->
         <div class="card form-card">
           <h3 class="form-title">➕ Tambah Pakaian ke Lemari</h3>
           <div class="form-row">
-            <input type="text" id="wardrobe-name" class="input-field" placeholder="Nama pakaian (mis: Rok Plisket, Boxer Seamless, Daster)..." maxlength="60">
+            <input type="text" id="wardrobe-name" class="input-field" placeholder="Nama pakaian (mis: Rok Plisket Lilac, Boxer Seamless, Daster)..." maxlength="60">
           </div>
           <div class="form-grid-2">
             <div>
@@ -328,13 +443,13 @@
       </section>
 
       <!-- ======================================== -->
-      <!-- TAB 3: DARE MODE (GAMIFIKASI & TIMER)    -->
+      <!-- TAB 3: DARE MODE (GAMIFIKASI & HUKUMAN)  -->
       <!-- ======================================== -->
       <section id="tab-dare" class="tab-content">
         <div class="tab-header-row">
           <div>
             <h2 class="tab-heading">Dare Mode</h2>
-            <p class="tab-sub">Tantangan outfit & gamifikasi kedisiplinan</p>
+            <p class="tab-sub">Tantangan outfit &amp; gamifikasi kedisiplinan</p>
           </div>
         </div>
 
@@ -358,11 +473,10 @@
           </div>
         </div>
 
-        <!-- Panel Generator Tantangan Baru (Jika tidak ada tantangan aktif) -->
+        <!-- Setup Quest Baru -->
         <div id="dare-setup-card" class="card form-card">
           <h3 class="form-title">🎯 Mulai Tantangan Baru</h3>
 
-          <!-- Pemilihan Mood Aktivitas -->
           <div class="form-row">
             <label class="field-label">1. Pilih Kategori Mood / Aktivitas:</label>
             <div class="mood-selector">
@@ -381,11 +495,10 @@
             </div>
           </div>
 
-          <!-- Pemilihan Durasi -->
           <div class="form-row">
             <label class="field-label">2. Pilih Durasi Tantangan:</label>
             <select id="dare-duration" class="input-field">
-              <option value="15">⏱️ 15 Menit (Cepat & Ringan)</option>
+              <option value="15">⏱️ 15 Menit (Cepat &amp; Ringan)</option>
               <option value="30" selected>⏱️ 30 Menit (Standar)</option>
               <option value="45">⏱️ 45 Menit (Menantang)</option>
               <option value="60">⏱️ 60 Menit (Uji Nyali Penuh)</option>
@@ -393,20 +506,19 @@
           </div>
 
           <div class="dare-info-box">
-            <small>⚠️ <strong>Aturan Anti-Curang:</strong> Begitu tantangan dimulai, timer akan berjalan terus meski browser ditutup. Jika menyerah, Anda akan terkena <strong>Sistem Hukuman Lapis Empat</strong>!</small>
+            <small>⚠️ <strong>Aturan Anti-Curang:</strong> Timer berbasis Date.now() akan tetap berjalan meski browser ditutup/refresh. Jika menekan Nyerah, Anda akan terkena <strong>Hukuman Lapis Empat (Cooldown 3 Jam)</strong>!</small>
           </div>
 
           <button class="btn-primary" id="btn-start-dare">⚔️ Mulai Tantangan Sekarang</button>
         </div>
 
-        <!-- Panel Tantangan Aktif (Timer & Actions) -->
+        <!-- Active Quest Panel -->
         <div id="dare-active-card" class="card dare-active-card" style="display: none;">
           <div class="dare-active-header">
             <span class="active-badge">TANTANGAN SEDANG BERLANGSUNG</span>
             <span class="reroll-tag" id="reroll-remaining-tag">Reroll: 3/3</span>
           </div>
 
-          <!-- Deskripsi Quest -->
           <div class="quest-display-box">
             <h4 class="quest-title">🔥 Quest Anda:</h4>
             <p class="quest-text" id="quest-description">Pakai [Outfit] selama [Durasi] sambil [Aktivitas]...</p>
@@ -419,13 +531,13 @@
             <span class="timer-target" id="timer-target-label">Target selesai: --:--</span>
           </div>
 
-          <!-- Tombol Aksi Dare -->
+          <!-- Action Buttons -->
           <div class="dare-action-buttons">
             <button class="btn-reroll" id="btn-reroll-dare" title="Kocok ulang aktivitas (Maks 3x sehari)">
               🎲 Reroll Aktivitas (<span id="reroll-count-btn">3</span>x)
             </button>
             <button class="btn-claim-reward" id="btn-claim-reward" disabled>
-              🎉 Selesai & Klaim Poin (+50)
+              🎉 Selesai &amp; Klaim Poin (+50)
             </button>
             <button class="btn-surrender" id="btn-surrender-dare">
               🏳️ Nyerah (Kena Hukuman)
@@ -435,17 +547,16 @@
       </section>
 
       <!-- ======================================== -->
-      <!-- TAB 4: COMFORT & SIZE JOURNAL            -->
+      <!-- TAB 4: COMFORT JOURNAL                   -->
       <!-- ======================================== -->
       <section id="tab-journal" class="tab-content">
         <div class="tab-header-row">
           <div>
             <h2 class="tab-heading">Comfort Journal</h2>
-            <p class="tab-sub">Catat ukuran, kenyamanan, & rasa pemakaian</p>
+            <p class="tab-sub">Catat ukuran, kenyamanan, &amp; rasa pemakaian pakaian</p>
           </div>
         </div>
 
-        <!-- Form Tambah Catatan Journal -->
         <div class="card form-card">
           <h3 class="form-title">✏️ Catat Impresi Pakaian</h3>
           <div class="form-row">
@@ -474,48 +585,108 @@
           <button class="btn-primary" id="btn-save-journal">Simpan ke Jurnal</button>
         </div>
 
-        <!-- Daftar Kartu Jurnal -->
         <div class="section-group">
           <h3 class="section-title">📓 Riwayat Jurnal</h3>
           <div id="journal-cards-container" class="journal-cards-container"></div>
         </div>
       </section>
 
+      <!-- ======================================== -->
+      <!-- TAB 5: SECRET GITHUB STEGANOGRAPHY BACKUP-->
+      <!-- ======================================== -->
+      <section id="tab-backup" class="tab-content">
+        <div class="tab-header-row">
+          <div>
+            <h2 class="tab-heading">Cloud Siluman</h2>
+            <p class="tab-sub">Backup steganografi data vault ke GitHub terselubung</p>
+          </div>
+        </div>
+
+        <div class="card form-card">
+          <h3 class="form-title">☁️ Konfigurasi GitHub Stealth Backup</h3>
+          <p class="backup-desc">
+            Data brankas Anda dikompresi, dienkripsi Base64, dan disuntikkan ke repositori GitHub pilihan Anda dengan menyamar sebagai file cache sistem wajar:
+            <code>config/build-cache-lock.json</code>.
+          </p>
+
+          <div class="form-row">
+            <label class="field-label">GitHub Personal Access Token (PAT):</label>
+            <input type="password" id="gh-token" class="input-field" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" autocomplete="off">
+            <small class="field-help">Memerlukan scope repo (Contents: Read and Write).</small>
+          </div>
+
+          <div class="form-grid-2">
+            <div>
+              <label class="field-label">GitHub Username / Owner:</label>
+              <input type="text" id="gh-username" class="input-field" placeholder="mis: Mirza1805">
+            </div>
+            <div>
+              <label class="field-label">Nama Repositori:</label>
+              <input type="text" id="gh-repo" class="input-field" placeholder="mis: Personal-Vault atau repo coding lain">
+            </div>
+          </div>
+
+          <div class="backup-actions-grid">
+            <button class="btn-primary" id="btn-backup-github">
+              <span>🚀 Backup Sekarang (Siluman)</span>
+            </button>
+            <button class="btn-secondary" id="btn-restore-github">
+              <span>📥 Restore dari GitHub</span>
+            </button>
+          </div>
+
+          <!-- Status Box Log -->
+          <div class="backup-status-box" id="backup-status-box">
+            <div class="status-header">
+              <span class="status-dot" id="backup-status-dot"></span>
+              <strong id="backup-status-title">Status: Siap</strong>
+            </div>
+            <pre class="status-log" id="backup-status-log">Belum ada aktivitas cloud backup.</pre>
+          </div>
+        </div>
+      </section>
+
     </main>
 
-    <!-- Bottom Navigation Bar (4 Tab) -->
+    <!-- Bottom Navigation Bar (5 Tab) -->
     <nav class="bottom-nav" id="bottom-nav">
       <button class="nav-btn active" data-tab="tasks">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
         </svg>
-        <span>Checklist</span>
+        <span>Tasks</span>
       </button>
       <button class="nav-btn" data-tab="wardrobe">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <circle cx="12" cy="12" r="10"/><path d="M16 8l-4 4-4-4"/><path d="M12 12v6"/>
         </svg>
         <span>Gacha</span>
       </button>
       <button class="nav-btn" data-tab="dare">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
         </svg>
         <span>Dare</span>
       </button>
       <button class="nav-btn" data-tab="journal">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
         </svg>
         <span>Journal</span>
+      </button>
+      <button class="nav-btn" data-tab="backup">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/>
+        </svg>
+        <span>Cloud</span>
       </button>
     </nav>
 
   </div>
 
-  <!-- ============================================ -->
-  <!-- 4. SAVAGE POPUP MODAL (HUKUMAN NYERAH)       -->
-  <!-- ============================================ -->
+  <!-- ======================================================== -->
+  <!-- 5. SAVAGE POPUP MODAL (HUKUMAN NYERAH DARE MODE)         -->
+  <!-- ======================================================== -->
   <div id="savage-modal" class="savage-modal" style="display: none;">
     <div class="savage-backdrop"></div>
     <div class="savage-card">
@@ -525,21 +696,21 @@
       </div>
 
       <h3 class="savage-title">KAMU MENYERAH!</h3>
-      <p class="savage-mockery" id="savage-mockery-text">"Yahh cupu banget, baru segini doang udah nyerah & ciut nyalinya? Hahaha!"</p>
+      <p class="savage-mockery" id="savage-mockery-text">"Yahh cupu banget, baru segini doang udah nyerah &amp; ciut nyalinya? Hahaha!"</p>
 
       <div class="savage-consequences">
         <div class="consequence-item">
           <span class="cq-icon">🔻</span>
           <div>
-            <strong>Poin & Gelar Turun</strong>
+            <strong>Poin &amp; Gelar Turun</strong>
             <small>-50 Poin dan penurunan tingkatan title kehormatan.</small>
           </div>
         </div>
         <div class="consequence-item">
           <span class="cq-icon">⏳</span>
           <div>
-            <strong>Cooldown 12 Jam</strong>
-            <small>Gacha & Dare di-lock selama 12 jam ke depan.</small>
+            <strong>Cooldown 3 Jam</strong>
+            <small>Gacha &amp; Dare di-lock selama 3 jam ke depan.</small>
           </div>
         </div>
         <div class="consequence-item">
@@ -557,12 +728,12 @@
           <div class="longpress-bar" id="longpress-bar"></div>
           <span class="longpress-text">Tahan 3 Detik untuk Mengakui Kekalahan</span>
         </button>
-        <small class="longpress-hint">Tekan & jangan lepas selama 3 detik untuk menutup</small>
+        <small class="longpress-hint">Tekan &amp; jangan lepas selama 3 detik untuk menutup</small>
       </div>
     </div>
   </div>
 
-  <!-- Toast Pop-up Notification -->
+  <!-- Toast Notification Pop-up -->
   <div id="toast" class="toast"></div>
 
   <script src="app.js"></script>
