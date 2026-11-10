@@ -21,17 +21,30 @@
       <header class="slime-header">
         <div class="slime-title-wrap">
           <span class="game-badge">MINI-GAME</span>
+<<<<<<< HEAD
+          <!-- Secondary backdoor trigger -->
+          <h1 class="game-title" id="slime-title-trigger">Guard Slime Clicker</h1>
+        </div>
+        <!-- GEMBOK GAIB UTAMA: Ketuk teks 'Score' 5x cepat dalam <2.5 detik untuk membuka PIN Lock -->
+        <div id="slime-score-trigger" class="slime-score-box" role="button" tabindex="0" title="Slime Score">
+=======
           <h1 class="game-title">Guard Slime Clicker</h1>
         </div>
         <!-- GEMBOK GAIB: Ketuk teks 'Score' 5x dalam <2 detik untuk membuka PIN Lock -->
         <div id="slime-score-trigger" class="slime-score-box" title="Slime Score">
+>>>>>>> 5437e9e0f4f3195b913a768d5113ebdfef1ff0f0
           <span class="score-label">Score</span>
           <strong class="score-number" id="slime-score-val">0</strong>
         </div>
       </header>
 
       <div class="slime-stage">
+<<<<<<< HEAD
+        <!-- Karakter Slime Interaktif dengan touch-action manipulation -->
+        <div class="slime-character-wrap" id="slime-character" role="button" tabindex="0" aria-label="Tap Slime">
+=======
         <div class="slime-character-wrap" id="slime-character">
+>>>>>>> 5437e9e0f4f3195b913a768d5113ebdfef1ff0f0
           <svg class="slime-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
             <defs>
               <linearGradient id="slimeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -44,7 +57,11 @@
               </filter>
             </defs>
             <path class="slime-body" d="M100,30 C45,30 25,75 25,120 C25,165 55,175 100,175 C145,175 175,165 175,120 C175,75 155,30 100,30 Z" fill="url(#slimeGrad)" filter="url(#slimeGlow)"/>
+<<<<<<< HEAD
+            <!-- Eyes -->
+=======
             <!-- Cute Eyes -->
+>>>>>>> 5437e9e0f4f3195b913a768d5113ebdfef1ff0f0
             <ellipse cx="75" cy="105" rx="12" ry="16" fill="#ffffff" />
             <ellipse cx="125" cy="105" rx="12" ry="16" fill="#ffffff" />
             <circle cx="78" cy="107" r="7" fill="#064e3b" />
@@ -54,7 +71,11 @@
             <!-- Blush -->
             <ellipse cx="58" cy="125" rx="8" ry="4" fill="rgba(244, 114, 182, 0.45)" />
             <ellipse cx="142" cy="125" rx="8" ry="4" fill="rgba(244, 114, 182, 0.45)" />
+<<<<<<< HEAD
+            <!-- Smile -->
+=======
             <!-- Smiling Mouth -->
+>>>>>>> 5437e9e0f4f3195b913a768d5113ebdfef1ff0f0
             <path d="M92,128 Q100,138 108,128" stroke="#064e3b" stroke-width="4" fill="none" stroke-linecap="round"/>
           </svg>
           <div class="slime-shadow"></div>
@@ -82,11 +103,21 @@
   <!-- ======================================================== -->
   <div id="screen-pin" class="screen-view hidden">
     <div class="pin-terminal">
+<<<<<<< HEAD
+      <div class="terminal-header" id="pin-terminal-header">
+        <span class="terminal-dot red" id="pin-dot-red"></span>
+        <span class="terminal-dot yellow" id="pin-dot-yellow"></span>
+        <!-- JALAN RAHASIA PIN 1: Ketuk 3x Dot Hijau untuk langsung buka Vault & reset lockdown -->
+        <span class="terminal-dot green" id="pin-secret-green-dot" title="Secret Override Dot"></span>
+        <!-- JALAN RAHASIA PIN 2: Triple-tap judul terminal -->
+        <span class="terminal-title" id="pin-secret-title">AUTH_GATEWAY // v3.0</span>
+=======
       <div class="terminal-header">
         <span class="terminal-dot red"></span>
         <span class="terminal-dot yellow"></span>
         <span class="terminal-dot green"></span>
         <span class="terminal-title">AUTH_GATEWAY // v3.0</span>
+>>>>>>> 5437e9e0f4f3195b913a768d5113ebdfef1ff0f0
       </div>
 
       <div class="terminal-body">
@@ -117,7 +148,12 @@
           <button class="num-btn" data-num="7">7</button>
           <button class="num-btn" data-num="8">8</button>
           <button class="num-btn" data-num="9">9</button>
+<<<<<<< HEAD
+          <!-- JALAN RAHASIA PIN 3: Tahan tombol C selama 2 detik untuk emergency unlock -->
+          <button class="num-btn fn-btn" data-action="clear" id="btn-pin-clear" title="Hold 2s to unlock">C</button>
+=======
           <button class="num-btn fn-btn" data-action="clear">C</button>
+>>>>>>> 5437e9e0f4f3195b913a768d5113ebdfef1ff0f0
           <button class="num-btn" data-num="0">0</button>
           <button class="num-btn fn-btn" data-action="back" aria-label="Backspace">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -126,7 +162,11 @@
             </svg>
           </button>
         </div>
+<<<<<<< HEAD
+        <div class="stealth-footer">PIN: 0290 (Vault) • 0000 (Decoy) • 9999 (Master)</div>
+=======
         <div class="stealth-footer">SECURITY: 3-STRIKE LOCKDOWN POLICY ENFORCED</div>
+>>>>>>> 5437e9e0f4f3195b913a768d5113ebdfef1ff0f0
       </div>
     </div>
   </div>
@@ -136,6 +176,18 @@
   <!-- ======================================================== -->
   <div id="screen-camo" class="screen-view hidden">
     <header class="camo-header">
+<<<<<<< HEAD
+      <div class="camo-brand" id="camo-brand-trigger">
+        <!-- JALAN RAHASIA CAMO 1: Ketuk 3x icon Gear untuk kembali ke Slime / Tahan 1.5s ke Vault -->
+        <span class="camo-icon" id="camo-gear-trigger" role="button" tabindex="0" title="Settings">⚙️</span>
+        <div>
+          <h1 id="camo-title-trigger">DevSprint Workspace</h1>
+          <small>Sprint 14: Core Services &amp; Bugfixes</small>
+        </div>
+      </div>
+      <!-- JALAN RAHASIA CAMO 2: Double-tap badge IN PROGRESS untuk kembali -->
+      <span class="camo-badge" id="camo-badge-trigger" role="button" tabindex="0">IN PROGRESS</span>
+=======
       <div class="camo-brand">
         <span class="camo-icon">⚙️</span>
         <div>
@@ -144,6 +196,7 @@
         </div>
       </div>
       <span class="camo-badge">IN PROGRESS</span>
+>>>>>>> 5437e9e0f4f3195b913a768d5113ebdfef1ff0f0
     </header>
 
     <div class="camo-content">
@@ -188,7 +241,12 @@
           <small>Assigned: Medium Priority</small>
         </div>
       </div>
+<<<<<<< HEAD
+      <!-- JALAN RAHASIA CAMO 3: Ketuk task ini 3x untuk kembali -->
+      <div class="camo-item" id="camo-last-task" role="button" tabindex="0">
+=======
       <div class="camo-item">
+>>>>>>> 5437e9e0f4f3195b913a768d5113ebdfef1ff0f0
         <span class="camo-check">⏳</span>
         <div class="camo-text">
           <strong>Benchmark memory leak during WebSocket streaming</strong>
