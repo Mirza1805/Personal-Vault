@@ -14,9 +14,60 @@
 <body>
 
   <!-- ======================================================== -->
-  <!-- 1. INVISIBLE UI: GUARD SLIME CLICKER GAME (LAYAR AWAL)   -->
+  <!-- 0. NORMAL CHECKLIST & REMINDER (LAYAR AWAL PUBLIK)       -->
   <!-- ======================================================== -->
-  <div id="screen-slime" class="screen-view">
+  <div id="screen-normal" class="screen-view">
+    <header class="normal-header">
+      <div class="normal-header-content">
+        <div class="normal-logo">
+          <span class="normal-symbol">📝</span>
+          <div>
+            <h1>TaskFlow Workspace</h1>
+            <small>Daily Checklist &amp; Smart Reminder</small>
+          </div>
+        </div>
+        <button class="btn-create-category" id="btn-toggle-normal-cat-form">+ Kategori</button>
+      </div>
+
+      <!-- Normal Progress Bar -->
+      <div class="progress-wrap normal-progress-wrap" id="normal-progress-wrap">
+        <div class="progress-bar" id="normal-progress-bar"></div>
+        <span class="progress-text" id="normal-progress-text">0%</span>
+      </div>
+    </header>
+
+    <main class="normal-main-content">
+      <!-- Form Tambah Kategori Baru Normal -->
+      <div id="new-normal-category-box" class="card form-card collapse-card">
+        <h3 class="form-title">✨ Buat Kategori Tugas Baru</h3>
+        <div class="form-row">
+          <input type="text" id="input-normal-cat-name" class="input-field" placeholder="Nama Kategori (mis: Rutinitas, Belanja, Pekerjaan)..." maxlength="50">
+        </div>
+        <div class="form-row checkbox-row">
+          <label class="custom-toggle">
+            <input type="checkbox" id="input-normal-cat-daily">
+            <span class="toggle-slider"></span>
+          </label>
+          <div class="toggle-label-group">
+            <strong>Kategori Daily (Auto-Reset Harian)</strong>
+            <small>Semua tugas di kategori ini otomatis kembali uncheck saat berganti hari (00:00).</small>
+          </div>
+        </div>
+        <div class="form-actions">
+          <button class="btn-secondary" id="btn-cancel-normal-cat">Batal</button>
+          <button class="btn-primary" id="btn-save-normal-cat">Simpan Kategori</button>
+        </div>
+      </div>
+
+      <!-- Container Kategori Dinamis Normal -->
+      <div id="normal-category-list-container" class="category-list-container"></div>
+    </main>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- 1. INVISIBLE UI: GUARD SLIME CLICKER GAME (LAYAR KEDUA)  -->
+  <!-- ======================================================== -->
+  <div id="screen-slime" class="screen-view hidden">
     <div class="slime-game-container">
       <header class="slime-header">
         <div class="slime-title-wrap">
@@ -78,6 +129,26 @@
       </footer>
     </div>
   </div>
+
+  <!-- Outer Navigation Bar (Peralihan Layar Publik: Normal Tasks & Slime Mini-Game) -->
+  <nav id="outer-nav-bar" class="outer-nav-bar">
+    <button class="outer-nav-btn active" id="outer-tab-btn-normal" data-outer-screen="normal" title="Checklist &amp; Reminder Publik">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M9 11l3 3L22 4"/>
+        <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+      </svg>
+      <span>Tugas</span>
+    </button>
+    <button class="outer-nav-btn" id="outer-tab-btn-slime" data-outer-screen="slime" title="Guard Slime Clicker">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"/>
+        <circle cx="8" cy="10" r="1.5" fill="currentColor"/>
+        <circle cx="16" cy="10" r="1.5" fill="currentColor"/>
+        <path d="M8 15s1.5 2 4 2 4-2 4-2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+      <span>Mini-Game</span>
+    </button>
+  </nav>
 
   <!-- ======================================================== -->
   <!-- 2. PIN LOCK SCREEN (DECOY PIN & 3-STRIKE LOCKDOWN)       -->
@@ -253,20 +324,20 @@
     <main id="app-main">
 
       <!-- ======================================== -->
-      <!-- TAB 1: MULTI-CATEGORY CHECKLIST          -->
+      <!-- TAB 1: MULTI-CATEGORY CHECKLIST (PRIVAT) -->
       <!-- ======================================== -->
       <section id="tab-tasks" class="tab-content active">
         <div class="tab-header-row">
           <div>
-            <h2 class="tab-heading">My Checklist</h2>
-            <p class="tab-sub">Tugas harian, weekend, belanja &amp; hukuman</p>
+            <h2 class="tab-heading">Private Checklist</h2>
+            <p class="tab-sub">Tugas rahasia, outfit, &amp; target privat dalam Vault</p>
           </div>
           <button class="btn-create-category" id="btn-toggle-cat-form">+ Kategori</button>
         </div>
 
         <!-- Form Tambah Kategori Baru -->
         <div id="new-category-box" class="card form-card collapse-card">
-          <h3 class="form-title">✨ Buat Kategori Baru</h3>
+          <h3 class="form-title">🔒 Buat Kategori Privat Baru</h3>
           <div class="form-row">
             <input type="text" id="input-cat-name" class="input-field" placeholder="Nama Kategori (mis: Belanja Bulanan, Tugas Kampus)..." maxlength="50">
           </div>
@@ -530,7 +601,7 @@
         <div id="dare-active-card" class="card dare-active-card" style="display: none;">
           <div class="dare-active-header">
             <span class="active-badge">TANTANGAN SEDANG BERLANGSUNG</span>
-            <span class="reroll-tag" id="reroll-remaining-tag">Reroll: 3/3</span>
+            <span class="reroll-tag" id="reroll-remaining-tag">Reroll: 5/5</span>
           </div>
 
           <div class="quest-display-box">
@@ -547,8 +618,8 @@
 
           <!-- Action Buttons -->
           <div class="dare-action-buttons">
-            <button class="btn-reroll" id="btn-reroll-dare" title="Kocok ulang aktivitas (Maks 3x sehari)">
-              🎲 Reroll Aktivitas (<span id="reroll-count-btn">3</span>x)
+            <button class="btn-reroll" id="btn-reroll-dare" title="Kocok ulang aktivitas (Maks 5x, cooldown 3 jam jika habis)">
+              🎲 Reroll Aktivitas (<span id="reroll-count-btn">5</span>x)
             </button>
             <button class="btn-claim-reward" id="btn-claim-reward" disabled>
               🎉 Selesai &amp; Klaim Poin (+50)

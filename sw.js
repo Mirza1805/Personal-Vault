@@ -3,7 +3,7 @@
 // Progressive Web App Offline Caching (Cache-First dengan Network Fallback)
 // =============================================================================
 
-const CACHE_NAME = 'guard-slime-vault-v5';
+const CACHE_NAME = 'guard-slime-vault-v6';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',

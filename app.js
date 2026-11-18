@@ -13,12 +13,15 @@ const DECOY_PIN = '0000';  // Decoy PIN: Mengelabui ke halaman Coding Tasks
 
 const STORAGE_KEYS = {
   settings: 'vault_settings',         // Status lockdown & security policy
-  tasks: 'vault_tasks',               // Checklist multi-kategori (Nested JSON)
-  lastDate: 'vault_last_date',         // Checkpoint tanggal Auto-Reset 00:00
+  tasks: 'vault_tasks',               // Checklist multi-kategori Privat dalam Vault
+  lastDate: 'vault_last_date',         // Checkpoint tanggal Auto-Reset 00:00 Privat
+  normalTasks: 'normal_vault_tasks',  // Checklist multi-kategori Normal Publik
+  normalLastDate: 'normal_last_date', // Checkpoint tanggal Auto-Reset 00:00 Normal
   wardrobe: 'vault_wardrobe',         // Koleksi pakaian
   loadouts: 'vault_loadouts',         // RPG Loadout presets pakaian
   journal: 'vault_journal',           // Comfort journal pakaian
   gamification: 'vault_gamification', // Poin, Title, Status Quest Dare, Reroll, Cooldown
+  shuffleBags: 'vault_shuffle_bags',  // State shuffle bag untuk Dare Mode (Fisher-Yates)
   githubConfig: 'vault_gh_config'     // Konfigurasi stealth cloud backup (Token, Owner, Repo)
 };
 
@@ -32,28 +35,53 @@ const USER_TITLES = [
   { minPts: 500, name: "Legendary Vault Goddess" }
 ];
 
-// Data Default Gamifikasi
+// Data Default Gamifikasi (Batas Reroll 5x & Cooldown)
 const DEFAULT_GAMIFICATION = {
   points: 100,
   title: "Brave Girl",
-  rerollCount: 3,
+  rerollCount: 5,
   rerollDate: '',
-  cooldownUntil: 0, // Timestamp ms hukuman 3 jam
+  rerollCooldownUntil: 0, // Timestamp ms cooldown 3 jam saat reroll 5x habis
+  cooldownUntil: 0,       // Timestamp ms hukuman nyerah
   activeQuest: null
 };
 
-// Data Default Multi-Category Checklist
+// Data Default Normal Checklist & Reminder (Layar Luar Tanpa PIN)
+const DEFAULT_NORMAL_TASKS = [
+  {
+    id: 'norm_cat_daily',
+    name: 'Rutinitas Harian',
+    isDaily: true,
+    items: [
+      { id: 'n1', text: 'Minum air putih 500ml setelah bangun', checked: false, time: '06:30' },
+      { id: 'n2', text: 'Cek email & agenda pekerjaan', checked: false, time: '08:00' },
+      { id: 'n3', text: 'Olahraga ringan / jalan santai 15 menit', checked: false, time: '17:00' },
+      { id: 'n4', text: 'Review capaian harian & persiapan tidur', checked: false, time: '21:30' }
+    ]
+  },
+  {
+    id: 'norm_cat_work',
+    name: 'Tugas & Proyek',
+    isDaily: false,
+    items: [
+      { id: 'n5', text: 'Selesaikan revisi laporan minggu ini', checked: false, time: '14:00' },
+      { id: 'n6', text: 'Backup berkas penting ke cloud storage', checked: false, time: '' }
+    ]
+  }
+];
+
+// Data Default Multi-Category Checklist Privat (Dalam Vault)
 const DEFAULT_TASKS = [
   {
     id: 'cat_daily',
     name: 'Daily',
     isDaily: true,
     items: [
-      { id: 'd1', text: 'Merapikan kasur & ventilasi kamar pagi hari', checked: false },
-      { id: 'd2', text: 'Minum 2 liter air putih & suplemen vitamin', checked: false },
-      { id: 'd3', text: 'Skincare pagi & sunscreen sebelum beraktivitas', checked: false },
-      { id: 'd4', text: 'Stretching tubuh / workout ringan 20 menit', checked: false },
-      { id: 'd5', text: 'Catat journal kenyamanan pakaian hari ini', checked: false }
+      { id: 'd1', text: 'Merapikan kasur & ventilasi kamar pagi hari', checked: false, time: '' },
+      { id: 'd2', text: 'Minum 2 liter air putih & suplemen vitamin', checked: false, time: '' },
+      { id: 'd3', text: 'Skincare pagi & sunscreen sebelum beraktivitas', checked: false, time: '' },
+      { id: 'd4', text: 'Stretching tubuh / workout ringan 20 menit', checked: false, time: '' },
+      { id: 'd5', text: 'Catat journal kenyamanan pakaian hari ini', checked: false, time: '' }
     ]
   },
   {
@@ -61,10 +89,10 @@ const DEFAULT_TASKS = [
     name: 'Weekend',
     isDaily: false,
     items: [
-      { id: 'w1', text: 'Cuci pakaian rahasia dengan deterjen lembut & jemur', checked: false },
-      { id: 'w2', text: 'Ganti seprai & sarung bantal kasur', checked: false },
-      { id: 'w3', text: 'Servis motor & cek tekanan ban', checked: false },
-      { id: 'w4', text: 'Rapi-rapi lemari pakaian tersembunyi', checked: false }
+      { id: 'w1', text: 'Cuci pakaian rahasia dengan deterjen lembut & jemur', checked: false, time: '' },
+      { id: 'w2', text: 'Ganti seprai & sarung bantal kasur', checked: false, time: '' },
+      { id: 'w3', text: 'Servis motor & cek tekanan ban', checked: false, time: '' },
+      { id: 'w4', text: 'Rapi-rapi lemari pakaian tersembunyi', checked: false, time: '' }
     ]
   },
   {
@@ -72,10 +100,10 @@ const DEFAULT_TASKS = [
     name: 'Belanja',
     isDaily: false,
     items: [
-      { id: 'b1', text: 'Sampo & conditioner beraroma lembut', checked: false },
-      { id: 'b2', text: 'Sabun mandi cair pelembab', checked: false },
-      { id: 'b3', text: 'Pembalut bersayap (Night & Day pack)', checked: false },
-      { id: 'b4', text: 'Micellar water & kapas wajah', checked: false }
+      { id: 'b1', text: 'Sampo & conditioner beraroma lembut', checked: false, time: '' },
+      { id: 'b2', text: 'Sabun mandi cair pelembab', checked: false, time: '' },
+      { id: 'b3', text: 'Pembalut bersayap (Night & Day pack)', checked: false, time: '' },
+      { id: 'b4', text: 'Micellar water & kapas wajah', checked: false, time: '' }
     ]
   }
 ];
@@ -373,15 +401,18 @@ function escapeHtml(str) {
 
 /**
  * Menampilkan layar spesifik dan menyembunyikan layar lainnya
- * @param {'slime' | 'pin' | 'camo' | 'vault'} screenId
+ * @param {'normal' | 'slime' | 'pin' | 'camo' | 'vault'} screenId
  */
 function switchScreen(screenId) {
   const screens = {
+    normal: document.getElementById('screen-normal'),
     slime: document.getElementById('screen-slime'),
     pin: document.getElementById('screen-pin'),
     camo: document.getElementById('screen-camo'),
     vault: document.getElementById('screen-vault')
   };
+
+  const outerNav = document.getElementById('outer-nav-bar');
 
   Object.keys(screens).forEach((key) => {
     if (screens[key]) {
@@ -393,9 +424,49 @@ function switchScreen(screenId) {
     }
   });
 
+  // Tampilkan outer navigation bar hanya pada mode luar publik (normal & slime)
+  if (outerNav) {
+    if (screenId === 'normal' || screenId === 'slime') {
+      outerNav.classList.remove('hidden');
+      updateOuterNavUI(screenId);
+    } else {
+      outerNav.classList.add('hidden');
+    }
+  }
+
   // Hapus tema feminim kecuali saat masuk ke layar Vault
   if (screenId !== 'vault') {
     document.body.classList.remove('feminine-theme');
+  }
+}
+
+function setupOuterNavigation() {
+  const normalBtn = document.getElementById('outer-tab-btn-normal');
+  const slimeBtn = document.getElementById('outer-tab-btn-slime');
+
+  normalBtn?.addEventListener('click', () => {
+    vibrate(10);
+    switchScreen('normal');
+  });
+
+  slimeBtn?.addEventListener('click', () => {
+    vibrate(10);
+    switchScreen('slime');
+  });
+}
+
+function updateOuterNavUI(currentScreenId) {
+  const normalBtn = document.getElementById('outer-tab-btn-normal');
+  const slimeBtn = document.getElementById('outer-tab-btn-slime');
+
+  if (normalBtn && slimeBtn) {
+    if (currentScreenId === 'normal') {
+      normalBtn.classList.add('active');
+      slimeBtn.classList.remove('active');
+    } else if (currentScreenId === 'slime') {
+      slimeBtn.classList.add('active');
+      normalBtn.classList.remove('active');
+    }
   }
 }
 
@@ -766,7 +837,7 @@ function initCamoBackdoors() {
   let lastTaskTaps = [];
   let footerTaps = [];
 
-  // Reset status lockdown & kembali ke Slime Game
+  // Reset status lockdown & kembali ke Layar Normal
   const returnToSlime = (sourceLabel = 'Jalan Rahasia') => {
     const settings = loadSecure(STORAGE_KEYS.settings, {});
     settings.lockdown = false;
@@ -774,8 +845,8 @@ function initCamoBackdoors() {
     failedPinAttempts = 0;
 
     vibrate([20, 20, 40]);
-    switchScreen('slime');
-    showToast(`🎮 ${sourceLabel}: Kembali ke Slime Game`);
+    switchScreen('normal');
+    showToast(`🎮 ${sourceLabel}: Kembali ke Mode Normal`);
   };
 
   // 1. GEAR ICON (⚙️):
@@ -993,9 +1064,9 @@ window.resetVaultLockdown = function () {
   settings.lockdown = false;
   saveSecure(STORAGE_KEYS.settings, settings);
   failedPinAttempts = 0;
-  switchScreen('slime');
-  console.log("%c[VAULT UNLOCKED] Status lockdown berhasil di-reset ke Game Slime.", "color: #10b981; font-weight: bold;");
-  return "Lockdown di-reset ke Slime Game.";
+  switchScreen('normal');
+  console.log("%c[VAULT UNLOCKED] Status lockdown berhasil di-reset ke Mode Normal.", "color: #10b981; font-weight: bold;");
+  return "Lockdown di-reset ke Mode Normal.";
 };
 
 /**
@@ -1035,10 +1106,10 @@ function setupPanicButton() {
     lastTap = now;
   });
 
-  // Tombol Kunci Manual -> Kembali ke Slime Game
+  // Tombol Kunci Manual -> Kembali ke Mode Normal
   lockManualBtn?.addEventListener('click', () => {
     vibrate(15);
-    switchScreen('slime');
+    switchScreen('normal');
     showToast('Vault terkunci kembali 🔐');
   });
 }
@@ -1527,15 +1598,78 @@ function deleteWardrobeItem(id) {
 }
 
 // ==========================================
-// 10. FITUR 4: DARE MODE (TIMER & HUKUMAN 3 JAM)
+// 10. FITUR 4: DARE MODE (TIMER, SHUFFLE BAG, 5x REROLL & COOLDOWN 3 JAM)
 // ==========================================
+
+let rerollCooldownInterval = null;
+
+/**
+ * Algoritma Anti-Duplikat (Shuffle Bag / Fisher-Yates Shuffle)
+ * State dek disimpan di localStorage per masing-masing kategori mood.
+ * Mencegah duplikasi sampai seluruh item dalam mood tersebut habis,
+ * dan mencegah item pertama putaran baru sama dengan item terakhir putaran sebelumnya.
+ */
+function drawFromShuffleBag(mood) {
+  const safeMood = MOOD_ACTIVITIES[mood] ? mood : 'santai';
+  const allActivities = MOOD_ACTIVITIES[safeMood];
+  if (!allActivities || allActivities.length === 0) return "Aktivitas santai";
+
+  let bags = loadSecure(STORAGE_KEYS.shuffleBags, {});
+  if (!bags || typeof bags !== 'object') bags = {};
+
+  let currentBag = bags[safeMood];
+  if (!currentBag || !Array.isArray(currentBag.deck) || currentBag.deck.length === 0) {
+    // Buat dek baru dengan kloning seluruh aktivitas
+    const newDeck = [...allActivities];
+
+    // Fisher-Yates Shuffle
+    for (let i = newDeck.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [newDeck[i], newDeck[j]] = [newDeck[j], newDeck[i]];
+    }
+
+    // Cegah item pertama pada putaran dek baru sama dengan item terakhir pada putaran sebelumnya
+    const lastItem = currentBag ? currentBag.lastItem : null;
+    if (lastItem && newDeck.length > 1 && newDeck[0] === lastItem) {
+      const swapIdx = Math.floor(Math.random() * (newDeck.length - 1)) + 1;
+      [newDeck[0], newDeck[swapIdx]] = [newDeck[swapIdx], newDeck[0]];
+    }
+
+    currentBag = {
+      deck: newDeck,
+      lastItem: lastItem
+    };
+  }
+
+  // Ambil item teratas dari dek
+  const drawnItem = currentBag.deck.shift();
+  currentBag.lastItem = drawnItem;
+
+  // Simpan state kembali ke localStorage
+  bags[safeMood] = currentBag;
+  saveSecure(STORAGE_KEYS.shuffleBags, bags);
+
+  return drawnItem;
+}
 
 function initDareMode() {
   const gData = loadSecure(STORAGE_KEYS.gamification, DEFAULT_GAMIFICATION);
-
+  const now = Date.now();
   const today = todayString();
+
+  // Pulihkan reroll jika cooldown 3 jam sudah selesai
+  if (gData.rerollCooldownUntil && now >= gData.rerollCooldownUntil) {
+    gData.rerollCount = 5;
+    gData.rerollCooldownUntil = 0;
+    saveSecure(STORAGE_KEYS.gamification, gData);
+  }
+
+  // Reset kuota harian ke 5/5 jika tanggal berganti dan tidak sedang cooldown
   if (gData.rerollDate !== today) {
-    gData.rerollCount = 3;
+    if (!gData.rerollCooldownUntil || now >= gData.rerollCooldownUntil) {
+      gData.rerollCount = 5;
+      gData.rerollCooldownUntil = 0;
+    }
     gData.rerollDate = today;
     saveSecure(STORAGE_KEYS.gamification, gData);
   }
@@ -1551,6 +1685,7 @@ function initDareMode() {
   }
 
   checkCooldownTimer();
+  checkRerollCooldownTimer();
 }
 
 function updateGamificationProfileUI() {
@@ -1563,8 +1698,77 @@ function updateGamificationProfileUI() {
 
   const rerollTag = document.getElementById('reroll-remaining-tag');
   const rerollBtnCount = document.getElementById('reroll-count-btn');
-  if (rerollTag) rerollTag.textContent = `Reroll: ${gData.rerollCount}/3`;
-  if (rerollBtnCount) rerollBtnCount.textContent = gData.rerollCount;
+  const now = Date.now();
+
+  if (gData.rerollCooldownUntil && gData.rerollCooldownUntil > now) {
+    const diff = Math.floor((gData.rerollCooldownUntil - now) / 1000);
+    const hh = String(Math.floor(diff / 3600)).padStart(2, '0');
+    const mm = String(Math.floor((diff % 3600) / 60)).padStart(2, '0');
+    const ss = String(diff % 60).padStart(2, '0');
+    if (rerollTag) {
+      rerollTag.textContent = `Reroll: 0/5 (${hh}:${mm}:${ss})`;
+      rerollTag.classList.add('cooldown');
+    }
+  } else {
+    if (rerollTag) {
+      rerollTag.textContent = `Reroll: ${gData.rerollCount}/5`;
+      rerollTag.classList.remove('cooldown');
+    }
+    if (rerollBtnCount) rerollBtnCount.textContent = gData.rerollCount;
+  }
+}
+
+function checkRerollCooldownTimer() {
+  clearInterval(rerollCooldownInterval);
+  const rerollBtn = document.getElementById('btn-reroll-dare');
+  const rerollTag = document.getElementById('reroll-remaining-tag');
+
+  const tick = () => {
+    const gData = loadSecure(STORAGE_KEYS.gamification, DEFAULT_GAMIFICATION);
+    const now = Date.now();
+
+    if (gData.rerollCooldownUntil && gData.rerollCooldownUntil > now) {
+      if (rerollBtn) rerollBtn.disabled = true;
+
+      const remainingMs = gData.rerollCooldownUntil - now;
+      const totalSec = Math.floor(remainingMs / 1000);
+      const hh = String(Math.floor(totalSec / 3600)).padStart(2, '0');
+      const mm = String(Math.floor((totalSec % 3600) / 60)).padStart(2, '0');
+      const ss = String(totalSec % 60).padStart(2, '0');
+      const timerStr = `${hh}:${mm}:${ss}`;
+
+      if (rerollTag) {
+        rerollTag.textContent = `Reroll: 0/5 (${timerStr})`;
+        rerollTag.classList.add('cooldown');
+      }
+      if (rerollBtn) {
+        rerollBtn.innerHTML = `⏳ Cooldown (${timerStr})`;
+      }
+    } else {
+      if (gData.rerollCooldownUntil && now >= gData.rerollCooldownUntil) {
+        gData.rerollCount = 5;
+        gData.rerollCooldownUntil = 0;
+        saveSecure(STORAGE_KEYS.gamification, gData);
+        showToast('✨ Cooldown Reroll 3 jam selesai! Jatah reroll kembali 5/5.');
+      }
+
+      if (rerollBtn) {
+        rerollBtn.disabled = gData.rerollCount <= 0;
+        rerollBtn.innerHTML = `🎲 Reroll Aktivitas (<span id="reroll-count-btn">${gData.rerollCount}</span>x)`;
+      }
+      if (rerollTag) {
+        rerollTag.textContent = `Reroll: ${gData.rerollCount}/5`;
+        rerollTag.classList.remove('cooldown');
+      }
+
+      if (!gData.rerollCooldownUntil || now >= gData.rerollCooldownUntil) {
+        clearInterval(rerollCooldownInterval);
+      }
+    }
+  };
+
+  tick();
+  rerollCooldownInterval = setInterval(tick, 1000);
 }
 
 function setupDareButtons() {
@@ -1601,8 +1805,8 @@ function startNewDareQuest() {
     outfitDesc = `${t}, ${b}, ${u}`;
   }
 
-  const moodList = MOOD_ACTIVITIES[selectedMood] || MOOD_ACTIVITIES.santai;
-  const activity = moodList[Math.floor(Math.random() * moodList.length)];
+  // AMBIL AKTIVITAS DARI SHUFFLE BAG (Anti-Duplikat Fisher-Yates)
+  const activity = drawFromShuffleBag(selectedMood);
 
   // TIMER ANTI-CURANG BERBASIS Date.now():
   // Target selesai = Waktu sekarang + Durasi dalam milidetik
@@ -1622,6 +1826,7 @@ function startNewDareQuest() {
 
   vibrate(30);
   restoreActiveQuestUI(quest);
+  checkRerollCooldownTimer();
   showToast('⚔️ Tantangan dimulai! Waktu berjalan!');
 }
 
@@ -1691,27 +1896,42 @@ function rerollDareActivity() {
   const gData = loadSecure(STORAGE_KEYS.gamification, DEFAULT_GAMIFICATION);
   if (!gData.activeQuest) return;
 
+  const now = Date.now();
+
+  // 1. Cek jika sedang dalam Cooldown Reroll 3 Jam
+  if (gData.rerollCooldownUntil && gData.rerollCooldownUntil > now) {
+    showToast('⛔ Reroll sedang dalam masa Cooldown 3 jam!');
+    vibrate([40, 40, 40]);
+    return;
+  }
+
+  // 2. Cek apakah jatah reroll masih tersedia
   if (gData.rerollCount <= 0) {
-    showToast('⚠️ Batas reroll hari ini (3x) sudah habis!');
+    showToast('⚠️ Jatah reroll (5x) sudah habis! Cooldown 3 jam aktif.');
     vibrate(10);
     return;
   }
 
   gData.rerollCount -= 1;
-  const moodList = MOOD_ACTIVITIES[gData.activeQuest.mood] || MOOD_ACTIVITIES.santai;
-  let newAct = moodList[Math.floor(Math.random() * moodList.length)];
 
-  if (newAct === gData.activeQuest.activity && moodList.length > 1) {
-    newAct = moodList.find((a) => a !== gData.activeQuest.activity) || newAct;
+  // Jika setelah reroll jatah menjadi 0 -> Aktifkan Cooldown 3 Jam!
+  if (gData.rerollCount === 0) {
+    const COOLDOWN_3_HOURS_MS = 3 * 60 * 60 * 1000;
+    gData.rerollCooldownUntil = now + COOLDOWN_3_HOURS_MS;
+    showToast('⚠️ Jatah 5x reroll habis! Cooldown 3 jam dimulai.');
+  } else {
+    showToast(`🎲 Aktivitas di-reroll! Sisa ${gData.rerollCount}/5x`);
   }
 
+  // Ambil aktivitas dari Shuffle Bag (Anti-Duplikat Fisher-Yates)
+  const newAct = drawFromShuffleBag(gData.activeQuest.mood);
   gData.activeQuest.activity = newAct;
   saveSecure(STORAGE_KEYS.gamification, gData);
 
   vibrate(15);
   restoreActiveQuestUI(gData.activeQuest);
   updateGamificationProfileUI();
-  showToast(`Aktivitas di-reroll! Sisa ${gData.rerollCount}x`);
+  checkRerollCooldownTimer();
 }
 
 function claimDareReward() {
@@ -1952,9 +2172,10 @@ async function executeGitHubStealthBackup() {
   vibrate(15);
 
   try {
-    // Kumpulkan seluruh data vault
+    // Kumpulkan seluruh data vault (termasuk tugas normal publik & privat)
     const vaultBundle = {
       tasks: loadSecure(STORAGE_KEYS.tasks, DEFAULT_TASKS),
+      normalTasks: loadSecure(STORAGE_KEYS.normalTasks, DEFAULT_NORMAL_TASKS),
       wardrobe: loadSecure(STORAGE_KEYS.wardrobe, DEFAULT_WARDROBE),
       loadouts: loadSecure(STORAGE_KEYS.loadouts, DEFAULT_LOADOUTS),
       journal: loadSecure(STORAGE_KEYS.journal, DEFAULT_JOURNAL),
@@ -2081,6 +2302,7 @@ async function executeGitHubStealthRestore() {
 
     // Pulihkan seluruh kunci ke localStorage
     if (vaultBundle.tasks) saveSecure(STORAGE_KEYS.tasks, vaultBundle.tasks);
+    if (vaultBundle.normalTasks) saveSecure(STORAGE_KEYS.normalTasks, vaultBundle.normalTasks);
     if (vaultBundle.wardrobe) saveSecure(STORAGE_KEYS.wardrobe, vaultBundle.wardrobe);
     if (vaultBundle.loadouts) saveSecure(STORAGE_KEYS.loadouts, vaultBundle.loadouts);
     if (vaultBundle.journal) saveSecure(STORAGE_KEYS.journal, vaultBundle.journal);
@@ -2092,6 +2314,7 @@ async function executeGitHubStealthRestore() {
     showToast('📥 Data Berhasil Di-Restore dari GitHub! ✓');
 
     // Refresh seluruh modul tampilan
+    renderNormalCategories();
     renderCategories();
     renderWardrobeInventory();
     renderLoadoutCards();
@@ -2288,7 +2511,7 @@ function renderCategories() {
   if (!container) return;
 
   if (categories.length === 0) {
-    container.innerHTML = '<div class="empty-state">Belum ada kategori checklist. Klik "+ Kategori".</div>';
+    container.innerHTML = '<div class="empty-state">Belum ada kategori checklist privat. Klik "+ Kategori".</div>';
     updateProgress();
     return;
   }
@@ -2304,6 +2527,7 @@ function renderCategories() {
           <div class="item-row ${item.checked ? 'checked' : ''}" data-cat-id="${cat.id}" data-item-id="${item.id}">
             <div class="item-checkbox"></div>
             <span class="item-text">${escapeHtml(item.text)}</span>
+            ${item.time ? `<span class="item-time-badge">⏰ ${escapeHtml(item.time)}</span>` : ''}
             <button class="item-del-btn" data-cat-id="${cat.id}" data-item-id="${item.id}" title="Hapus Tugas">✕</button>
           </div>
         `).join('');
@@ -2325,6 +2549,7 @@ function renderCategories() {
 
         <div class="category-add-row">
           <input type="text" class="input-field input-add-subitem" data-cat-id="${cat.id}" placeholder="+ Tambah tugas ke ${escapeHtml(cat.name)}..." maxlength="80">
+          <input type="time" class="input-field input-add-time" data-cat-id="${cat.id}" title="Set Jam Pengingat (Opsional)">
           <button class="btn-add-item" data-cat-id="${cat.id}">+</button>
         </div>
       </div>
@@ -2358,26 +2583,34 @@ function setupCategoryEventListeners() {
     if (addItemBtn) {
       const catId = addItemBtn.dataset.catId;
       const input = container.querySelector(`.input-add-subitem[data-cat-id="${catId}"]`);
-      if (input) submitNewSubItem(catId, input);
+      const timeInput = container.querySelector(`.input-add-time[data-cat-id="${catId}"]`);
+      if (input) submitNewSubItem(catId, input, timeInput);
       return;
     }
 
     const row = e.target.closest('.item-row');
-    if (row) {
+    if (row && !e.target.closest('.item-del-btn')) {
       toggleSubItem(row.dataset.catId, row.dataset.itemId);
     }
   };
 
   container.onkeydown = (e) => {
-    if (e.key === 'Enter' && e.target.classList.contains('input-add-subitem')) {
-      const catId = e.target.dataset.catId;
-      submitNewSubItem(catId, e.target);
+    if (e.key === 'Enter') {
+      const isTextInput = e.target.classList.contains('input-add-subitem');
+      const isTimeInput = e.target.classList.contains('input-add-time');
+      if (isTextInput || isTimeInput) {
+        const catId = e.target.dataset.catId;
+        const input = container.querySelector(`.input-add-subitem[data-cat-id="${catId}"]`);
+        const timeInput = container.querySelector(`.input-add-time[data-cat-id="${catId}"]`);
+        if (input) submitNewSubItem(catId, input, timeInput);
+      }
     }
   };
 }
 
-function submitNewSubItem(catId, inputEl) {
+function submitNewSubItem(catId, inputEl, timeInputEl) {
   const text = inputEl.value.trim();
+  const time = timeInputEl ? timeInputEl.value.trim() : '';
   if (!text) {
     showToast('Tuliskan nama tugas terlebih dahulu');
     return;
@@ -2388,10 +2621,11 @@ function submitNewSubItem(catId, inputEl) {
   if (!cat) return;
 
   if (!Array.isArray(cat.items)) cat.items = [];
-  cat.items.push({ id: uid(), text, checked: false });
+  cat.items.push({ id: uid(), text, checked: false, time });
   saveSecure(STORAGE_KEYS.tasks, categories);
 
   inputEl.value = '';
+  if (timeInputEl) timeInputEl.value = '';
   vibrate(12);
   renderCategories();
   showToast('Tugas ditambahkan ✓');
@@ -2498,6 +2732,365 @@ function updateProgress() {
 }
 
 // ==========================================
+// 13B. FITUR: CHECKLIST NORMAL (PUBLIK TANPA PIN)
+// ==========================================
+
+function initNormalTasks() {
+  let categories = loadSecure(STORAGE_KEYS.normalTasks, null);
+  if (!categories || !Array.isArray(categories)) {
+    categories = DEFAULT_NORMAL_TASKS;
+    saveSecure(STORAGE_KEYS.normalTasks, categories);
+  }
+
+  checkNormalAutoReset(categories);
+  renderNormalCategories();
+  setupNormalCategoryForm();
+}
+
+function checkNormalAutoReset(categories) {
+  const today = todayString();
+  const lastDate = loadSecure(STORAGE_KEYS.normalLastDate, null);
+
+  if (lastDate !== today) {
+    let hasReset = false;
+
+    categories.forEach((cat) => {
+      const isDailyCat = cat.isDaily || cat.name.toLowerCase() === 'daily' || cat.name.toLowerCase().includes('harian');
+      if (isDailyCat && Array.isArray(cat.items)) {
+        cat.items.forEach((item) => {
+          if (item.checked) {
+            item.checked = false;
+            hasReset = true;
+          }
+        });
+      }
+    });
+
+    saveSecure(STORAGE_KEYS.normalTasks, categories);
+    saveSecure(STORAGE_KEYS.normalLastDate, today);
+
+    if (lastDate !== null && hasReset) {
+      setTimeout(() => {
+        showToast('✨ Tugas harian publik otomatis di-reset untuk hari baru!');
+      }, 500);
+    }
+  }
+}
+
+function renderNormalCategories() {
+  const categories = loadSecure(STORAGE_KEYS.normalTasks, DEFAULT_NORMAL_TASKS);
+  const container = document.getElementById('normal-category-list-container');
+  if (!container) return;
+
+  if (categories.length === 0) {
+    container.innerHTML = '<div class="empty-state">Belum ada kategori checklist publik. Klik "+ Kategori".</div>';
+    updateNormalProgress();
+    return;
+  }
+
+  container.innerHTML = categories.map((cat) => {
+    const totalItems = cat.items ? cat.items.length : 0;
+    const doneItems = cat.items ? cat.items.filter((i) => i.checked).length : 0;
+    const isDailyCat = cat.isDaily || cat.name.toLowerCase() === 'daily' || cat.name.toLowerCase().includes('harian');
+
+    const itemsHtml = totalItems === 0
+      ? '<div class="empty-state">Belum ada tugas di kategori ini</div>'
+      : cat.items.map((item) => `
+          <div class="item-row ${item.checked ? 'checked' : ''}" data-cat-id="${cat.id}" data-item-id="${item.id}">
+            <div class="item-checkbox"></div>
+            <span class="item-text">${escapeHtml(item.text)}</span>
+            ${item.time ? `<span class="item-time-badge">⏰ ${escapeHtml(item.time)}</span>` : ''}
+            <button class="item-del-btn item-normal-del-btn" data-cat-id="${cat.id}" data-item-id="${item.id}" title="Hapus Tugas">✕</button>
+          </div>
+        `).join('');
+
+    return `
+      <div class="category-card" data-cat-id="${cat.id}">
+        <div class="category-header">
+          <div class="category-title-group">
+            <span class="category-title">${escapeHtml(cat.name)}</span>
+            ${isDailyCat ? '<span class="daily-badge">DAILY</span>' : ''}
+            <span class="category-count">(${doneItems}/${totalItems})</span>
+          </div>
+          <button class="btn-del-cat btn-del-normal-cat" data-cat-id="${cat.id}" title="Hapus Kategori">🗑️</button>
+        </div>
+
+        <div class="category-items">
+          ${itemsHtml}
+        </div>
+
+        <div class="category-add-row">
+          <input type="text" class="input-field input-normal-add-subitem" data-cat-id="${cat.id}" placeholder="+ Tambah tugas ke ${escapeHtml(cat.name)}..." maxlength="80">
+          <input type="time" class="input-field input-normal-add-time" data-cat-id="${cat.id}" title="Set Jam Pengingat (Opsional)">
+          <button class="btn-add-item btn-add-normal-item" data-cat-id="${cat.id}">+</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  updateNormalProgress();
+  setupNormalCategoryEventListeners();
+}
+
+function setupNormalCategoryEventListeners() {
+  const container = document.getElementById('normal-category-list-container');
+  if (!container) return;
+
+  container.onclick = (e) => {
+    const delCatBtn = e.target.closest('.btn-del-normal-cat');
+    if (delCatBtn) {
+      e.stopPropagation();
+      deleteNormalCategory(delCatBtn.dataset.catId);
+      return;
+    }
+
+    const delItemBtn = e.target.closest('.item-normal-del-btn');
+    if (delItemBtn) {
+      e.stopPropagation();
+      deleteNormalSubItem(delItemBtn.dataset.catId, delItemBtn.dataset.itemId);
+      return;
+    }
+
+    const addItemBtn = e.target.closest('.btn-add-normal-item');
+    if (addItemBtn) {
+      const catId = addItemBtn.dataset.catId;
+      const input = container.querySelector(`.input-normal-add-subitem[data-cat-id="${catId}"]`);
+      const timeInput = container.querySelector(`.input-normal-add-time[data-cat-id="${catId}"]`);
+      if (input) submitNewNormalSubItem(catId, input, timeInput);
+      return;
+    }
+
+    const row = e.target.closest('.item-row');
+    if (row && !e.target.closest('.item-del-btn')) {
+      toggleNormalSubItem(row.dataset.catId, row.dataset.itemId);
+    }
+  };
+
+  container.onkeydown = (e) => {
+    if (e.key === 'Enter') {
+      const isTextInput = e.target.classList.contains('input-normal-add-subitem');
+      const isTimeInput = e.target.classList.contains('input-normal-add-time');
+      if (isTextInput || isTimeInput) {
+        const catId = e.target.dataset.catId;
+        const input = container.querySelector(`.input-normal-add-subitem[data-cat-id="${catId}"]`);
+        const timeInput = container.querySelector(`.input-normal-add-time[data-cat-id="${catId}"]`);
+        if (input) submitNewNormalSubItem(catId, input, timeInput);
+      }
+    }
+  };
+}
+
+function submitNewNormalSubItem(catId, inputEl, timeInputEl) {
+  const text = inputEl.value.trim();
+  const time = timeInputEl ? timeInputEl.value.trim() : '';
+  if (!text) {
+    showToast('Tuliskan nama tugas terlebih dahulu');
+    return;
+  }
+
+  const categories = loadSecure(STORAGE_KEYS.normalTasks, DEFAULT_NORMAL_TASKS);
+  const cat = categories.find((c) => c.id === catId);
+  if (!cat) return;
+
+  if (!Array.isArray(cat.items)) cat.items = [];
+  cat.items.push({ id: uid(), text, checked: false, time });
+  saveSecure(STORAGE_KEYS.normalTasks, categories);
+
+  inputEl.value = '';
+  if (timeInputEl) timeInputEl.value = '';
+  vibrate(12);
+  renderNormalCategories();
+  showToast('Tugas normal ditambahkan ✓');
+}
+
+function toggleNormalSubItem(catId, itemId) {
+  const categories = loadSecure(STORAGE_KEYS.normalTasks, DEFAULT_NORMAL_TASKS);
+  const cat = categories.find((c) => c.id === catId);
+  if (!cat || !cat.items) return;
+
+  const item = cat.items.find((i) => i.id === itemId);
+  if (item) {
+    item.checked = !item.checked;
+    vibrate(item.checked ? 18 : 10);
+    saveSecure(STORAGE_KEYS.normalTasks, categories);
+    renderNormalCategories();
+  }
+}
+
+function deleteNormalSubItem(catId, itemId) {
+  const categories = loadSecure(STORAGE_KEYS.normalTasks, DEFAULT_NORMAL_TASKS);
+  const cat = categories.find((c) => c.id === catId);
+  if (!cat || !cat.items) return;
+
+  cat.items = cat.items.filter((i) => i.id !== itemId);
+  saveSecure(STORAGE_KEYS.normalTasks, categories);
+  vibrate(10);
+  renderNormalCategories();
+  showToast('Tugas dihapus');
+}
+
+function deleteNormalCategory(catId) {
+  let categories = loadSecure(STORAGE_KEYS.normalTasks, DEFAULT_NORMAL_TASKS);
+  categories = categories.filter((c) => c.id !== catId);
+  saveSecure(STORAGE_KEYS.normalTasks, categories);
+  vibrate(15);
+  renderNormalCategories();
+  showToast('Kategori dihapus');
+}
+
+function setupNormalCategoryForm() {
+  const toggleBtn = document.getElementById('btn-toggle-normal-cat-form');
+  const cancelBtn = document.getElementById('btn-cancel-normal-cat');
+  const saveBtn = document.getElementById('btn-save-normal-cat');
+  const box = document.getElementById('new-normal-category-box');
+  const nameInput = document.getElementById('input-normal-cat-name');
+  const dailyCheckbox = document.getElementById('input-normal-cat-daily');
+
+  toggleBtn?.addEventListener('click', () => {
+    box.classList.toggle('show');
+    if (box.classList.contains('show')) nameInput?.focus();
+  });
+
+  cancelBtn?.addEventListener('click', () => {
+    box.classList.remove('show');
+    nameInput.value = '';
+    dailyCheckbox.checked = false;
+  });
+
+  saveBtn?.addEventListener('click', () => {
+    const name = nameInput.value.trim();
+    if (!name) {
+      showToast('Nama kategori tidak boleh kosong');
+      return;
+    }
+
+    const categories = loadSecure(STORAGE_KEYS.normalTasks, DEFAULT_NORMAL_TASKS);
+    categories.push({
+      id: uid(),
+      name,
+      isDaily: dailyCheckbox.checked,
+      items: []
+    });
+
+    saveSecure(STORAGE_KEYS.normalTasks, categories);
+
+    nameInput.value = '';
+    dailyCheckbox.checked = false;
+    box.classList.remove('show');
+
+    vibrate(15);
+    renderNormalCategories();
+    showToast('Kategori baru tersimpan ✓');
+  });
+}
+
+function updateNormalProgress() {
+  const categories = loadSecure(STORAGE_KEYS.normalTasks, DEFAULT_NORMAL_TASKS);
+  let total = 0;
+  let done = 0;
+
+  categories.forEach((cat) => {
+    if (Array.isArray(cat.items)) {
+      total += cat.items.length;
+      done += cat.items.filter((i) => i.checked).length;
+    }
+  });
+
+  const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+  const bar = document.getElementById('normal-progress-bar');
+  const text = document.getElementById('normal-progress-text');
+  if (bar) bar.style.width = pct + '%';
+  if (text) text.textContent = pct + '%';
+}
+
+// ==========================================
+// 13C. SMART REMINDER ENGINE (NOTIFIKASI & GETAR)
+// ==========================================
+
+let reminderEngineInterval = null;
+let lastReminderMinute = '';
+const notifiedReminders = new Set();
+
+function initReminderEngine() {
+  if (reminderEngineInterval) clearInterval(reminderEngineInterval);
+
+  checkReminders();
+  reminderEngineInterval = setInterval(checkReminders, 10000);
+}
+
+function checkReminders() {
+  const now = new Date();
+  const hh = String(now.getHours()).padStart(2, '0');
+  const mm = String(now.getMinutes()).padStart(2, '0');
+  const currentTime = `${hh}:${mm}`;
+
+  // Reset daftar notifikasi saat menit berganti
+  if (lastReminderMinute !== currentTime) {
+    notifiedReminders.clear();
+    lastReminderMinute = currentTime;
+  }
+
+  // 1. Cek Pengingat Checklist Normal (Publik)
+  const normalCats = loadSecure(STORAGE_KEYS.normalTasks, DEFAULT_NORMAL_TASKS);
+  if (Array.isArray(normalCats)) {
+    normalCats.forEach((cat) => {
+      if (Array.isArray(cat.items)) {
+        cat.items.forEach((item) => {
+          if (!item.checked && item.time === currentTime) {
+            const notifKey = `normal_${item.id}_${currentTime}`;
+            if (!notifiedReminders.has(notifKey)) {
+              notifiedReminders.add(notifKey);
+              fireReminderAlert(`⏰ Pengingat: "${item.text}" (${currentTime})`, false);
+            }
+          }
+        });
+      }
+    });
+  }
+
+  // 2. Cek Pengingat Checklist Privat (Hanya jika Vault sedang TERBUKA)
+  const vaultScreen = document.getElementById('screen-vault');
+  const isVaultOpen = vaultScreen && !vaultScreen.classList.contains('hidden');
+
+  if (isVaultOpen) {
+    const privateCats = loadSecure(STORAGE_KEYS.tasks, DEFAULT_TASKS);
+    if (Array.isArray(privateCats)) {
+      privateCats.forEach((cat) => {
+        if (Array.isArray(cat.items)) {
+          cat.items.forEach((item) => {
+            if (!item.checked && item.time === currentTime) {
+              const notifKey = `vault_${item.id}_${currentTime}`;
+              if (!notifiedReminders.has(notifKey)) {
+                notifiedReminders.add(notifKey);
+                fireReminderAlert(`🔒 [Privat] Pengingat: "${item.text}" (${currentTime})`, true);
+              }
+            }
+          });
+        }
+      });
+    }
+  }
+}
+
+function fireReminderAlert(message, isPrivate = false) {
+  // 1. Getar haptik
+  vibrate(isPrivate ? [100, 60, 100, 60, 100] : [80, 50, 80]);
+
+  // 2. Toast banner di layar
+  showToast(message);
+
+  // 3. Web Notification API jika diizinkan
+  if ('Notification' in window && Notification.permission === 'granted') {
+    try {
+      new Notification('Task Reminder', {
+        body: message,
+        icon: './manifest.json'
+      });
+    } catch (e) { }
+  }
+}
+
+// ==========================================
 // 14. BOTTOM NAVIGATION TABS (5 TABS)
 // ==========================================
 
@@ -2572,12 +3165,17 @@ document.addEventListener('DOMContentLoaded', () => {
   // 0. Aktifkan proteksi anti-zoom (mencegah double-tap / double-click zoom di Web & Mobile)
   initAntiZoomProtection();
 
-  // 1. Selalu inisialisasi semua modul interaktif & seluruh pintu rahasia
+  // 1. Inisialisasi modul layar luar & navigasi publik
+  initNormalTasks();
+  setupOuterNavigation();
+  initReminderEngine();
+
+  // 2. Selalu inisialisasi semua modul interaktif & seluruh pintu rahasia
   initSlimeGame();
   initPinLock();
   initCamoBackdoors();
 
-  // 2. Hash URL Darurat (#reset, #unlock, #slime) untuk bypass instan jika diperlukan
+  // 3. Hash URL Darurat (#reset, #unlock, #slime) untuk bypass instan jika diperlukan
   if (window.location.hash === '#reset' || window.location.hash === '#unlock' || window.location.hash === '#slime') {
     window.resetVaultLockdown();
     try {
@@ -2585,17 +3183,17 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (e) { }
   }
 
-  // 3. Cek apakah ada status Lockdown 3-Strike Permanen
+  // 4. Cek apakah ada status Lockdown 3-Strike Permanen
   const settings = loadSecure(STORAGE_KEYS.settings, {});
   if (settings.lockdown === true) {
-    // Pengguna terkunci: Tampilkan Coding Tasks, tapi SEMUA backdoor (Gear, Badge, Task) SUDAH AKTIF!
+    // Pengguna terkunci: Tampilkan Coding Tasks, tapi SEMUA backdoor SUDAH AKTIF!
     switchScreen('camo');
   } else {
-    // Layar awal normal: Guard Slime Clicker Game
-    switchScreen('slime');
+    // Layar awal normal publik: TaskFlow Normal Checklist & Reminder
+    switchScreen('normal');
   }
 
-  // 4. Daftarkan Service Worker PWA Caching
+  // 5. Daftarkan Service Worker PWA Caching
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('./sw.js')
       .then((reg) => console.log('SW Registered Scope:', reg.scope))
