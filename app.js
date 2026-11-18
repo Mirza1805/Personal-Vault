@@ -35,13 +35,13 @@ const USER_TITLES = [
   { minPts: 500, name: "Legendary Vault Goddess" }
 ];
 
-// Data Default Gamifikasi (Batas Reroll 5x & Cooldown)
+// Data Default Gamifikasi (Batas Reroll 10x & Cooldown)
 const DEFAULT_GAMIFICATION = {
   points: 100,
   title: "Brave Girl",
-  rerollCount: 5,
+  rerollCount: 10,
   rerollDate: '',
-  rerollCooldownUntil: 0, // Timestamp ms cooldown 3 jam saat reroll 5x habis
+  rerollCooldownUntil: 0, // Timestamp ms cooldown 1 menit saat reroll 10x habis
   cooldownUntil: 0,       // Timestamp ms hukuman nyerah
   activeQuest: null
 };
@@ -1594,7 +1594,7 @@ function deleteWardrobeItem(id) {
 }
 
 // ==========================================
-// 10. FITUR 4: DARE MODE (TIMER, SHUFFLE BAG, 5x REROLL & COOLDOWN 3 JAM)
+// 10. FITUR 4: DARE MODE (TIMER, SHUFFLE BAG, 10x REROLL & COOLDOWN 1 MENIT)
 // ==========================================
 
 let rerollCooldownInterval = null;
@@ -1653,20 +1653,26 @@ function initDareMode() {
   const now = Date.now();
   const today = todayString();
 
-  // Pulihkan reroll jika cooldown 3 jam sudah selesai
+  // Pulihkan reroll jika cooldown 1 menit sudah selesai
   if (gData.rerollCooldownUntil && now >= gData.rerollCooldownUntil) {
-    gData.rerollCount = 5;
+    gData.rerollCount = 10;
     gData.rerollCooldownUntil = 0;
     saveSecure(STORAGE_KEYS.gamification, gData);
   }
 
-  // Reset kuota harian ke 5/5 jika tanggal berganti dan tidak sedang cooldown
+  // Reset kuota harian ke 10/10 jika tanggal berganti dan tidak sedang cooldown
   if (gData.rerollDate !== today) {
     if (!gData.rerollCooldownUntil || now >= gData.rerollCooldownUntil) {
-      gData.rerollCount = 5;
+      gData.rerollCount = 10;
       gData.rerollCooldownUntil = 0;
     }
     gData.rerollDate = today;
+    saveSecure(STORAGE_KEYS.gamification, gData);
+  }
+
+  // Sesuaikan jika data tersimpan sebelumnya masih menggunakan kuota lama (5) dan tidak cooldown
+  if (!gData.rerollCooldownUntil && gData.rerollCount === 5) {
+    gData.rerollCount = 10;
     saveSecure(STORAGE_KEYS.gamification, gData);
   }
 
@@ -1702,12 +1708,12 @@ function updateGamificationProfileUI() {
     const mm = String(Math.floor((diff % 3600) / 60)).padStart(2, '0');
     const ss = String(diff % 60).padStart(2, '0');
     if (rerollTag) {
-      rerollTag.textContent = `Reroll: 0/5 (${hh}:${mm}:${ss})`;
+      rerollTag.textContent = `Reroll: 0/10 (${hh}:${mm}:${ss})`;
       rerollTag.classList.add('cooldown');
     }
   } else {
     if (rerollTag) {
-      rerollTag.textContent = `Reroll: ${gData.rerollCount}/5`;
+      rerollTag.textContent = `Reroll: ${gData.rerollCount}/10`;
       rerollTag.classList.remove('cooldown');
     }
     if (rerollBtnCount) rerollBtnCount.textContent = gData.rerollCount;
@@ -1734,7 +1740,7 @@ function checkRerollCooldownTimer() {
       const timerStr = `${hh}:${mm}:${ss}`;
 
       if (rerollTag) {
-        rerollTag.textContent = `Reroll: 0/5 (${timerStr})`;
+        rerollTag.textContent = `Reroll: 0/10 (${timerStr})`;
         rerollTag.classList.add('cooldown');
       }
       if (rerollBtn) {
@@ -1742,10 +1748,10 @@ function checkRerollCooldownTimer() {
       }
     } else {
       if (gData.rerollCooldownUntil && now >= gData.rerollCooldownUntil) {
-        gData.rerollCount = 5;
+        gData.rerollCount = 10;
         gData.rerollCooldownUntil = 0;
         saveSecure(STORAGE_KEYS.gamification, gData);
-        showToast('✨ Cooldown Reroll 3 jam selesai! Jatah reroll kembali 5/5.');
+        showToast('✨ Cooldown Reroll 1 menit selesai! Jatah reroll kembali 10/10.');
       }
 
       if (rerollBtn) {
@@ -1753,7 +1759,7 @@ function checkRerollCooldownTimer() {
         rerollBtn.innerHTML = `🎲 Reroll Aktivitas (<span id="reroll-count-btn">${gData.rerollCount}</span>x)`;
       }
       if (rerollTag) {
-        rerollTag.textContent = `Reroll: ${gData.rerollCount}/5`;
+        rerollTag.textContent = `Reroll: ${gData.rerollCount}/10`;
         rerollTag.classList.remove('cooldown');
       }
 
@@ -1894,29 +1900,29 @@ function rerollDareActivity() {
 
   const now = Date.now();
 
-  // 1. Cek jika sedang dalam Cooldown Reroll 3 Jam
+  // 1. Cek jika sedang dalam Cooldown Reroll 1 Menit
   if (gData.rerollCooldownUntil && gData.rerollCooldownUntil > now) {
-    showToast('⛔ Reroll sedang dalam masa Cooldown 3 jam!');
+    showToast('⛔ Reroll sedang dalam masa Cooldown 1 menit!');
     vibrate([40, 40, 40]);
     return;
   }
 
   // 2. Cek apakah jatah reroll masih tersedia
   if (gData.rerollCount <= 0) {
-    showToast('⚠️ Jatah reroll (5x) sudah habis! Cooldown 3 jam aktif.');
+    showToast('⚠️ Jatah reroll (10x) sudah habis! Cooldown 1 menit aktif.');
     vibrate(10);
     return;
   }
 
   gData.rerollCount -= 1;
 
-  // Jika setelah reroll jatah menjadi 0 -> Aktifkan Cooldown 3 Jam!
+  // Jika setelah reroll jatah menjadi 0 -> Aktifkan Cooldown 1 Menit!
   if (gData.rerollCount === 0) {
-    const COOLDOWN_3_HOURS_MS = 3 * 60 * 60 * 1000;
-    gData.rerollCooldownUntil = now + COOLDOWN_3_HOURS_MS;
-    showToast('⚠️ Jatah 5x reroll habis! Cooldown 3 jam dimulai.');
+    const COOLDOWN_1_MIN_MS = 1 * 60 * 1000;
+    gData.rerollCooldownUntil = now + COOLDOWN_1_MIN_MS;
+    showToast('⚠️ Jatah 10x reroll habis! Cooldown 1 menit dimulai.');
   } else {
-    showToast(`🎲 Aktivitas di-reroll! Sisa ${gData.rerollCount}/5x`);
+    showToast(`🎲 Aktivitas di-reroll! Sisa ${gData.rerollCount}/10x`);
   }
 
   // Ambil aktivitas dari Shuffle Bag (Anti-Duplikat Fisher-Yates)
