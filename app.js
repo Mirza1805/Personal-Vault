@@ -1,28 +1,27 @@
 // =============================================================================
-// Guard Slime Clicker & Personal Vault — app.js
-// Arsitektur Keamanan Plausible Deniability, Gembok Gaib, Decoy PIN, RPG Loadout,
-// Gamifikasi Dare Mode (Cooldown 3 Jam), & GitHub Steganography Backup
+// TaskFlow Workspace & Interactive Mini-Game — app.js
+// State Management, Security Handlers, Task Automation, & Cloud Backup
 // =============================================================================
 
 // ==========================================
 // 1. KONSTANTA & STORAGE KEYS
 // ==========================================
 
-const TRUE_PIN = '0290';   // True PIN: Membuka Personal Vault asli
-const DECOY_PIN = '0000';  // Decoy PIN: Mengelabui ke halaman Coding Tasks
+const TRUE_PIN = '0290';   // Primary Access Code: Membuka Personal Vault asli
+const DECOY_PIN = '0000';  // Secondary Access Code: Mengelabui ke halaman Coding Tasks
 
 const STORAGE_KEYS = {
-  settings: 'vault_settings',         // Status lockdown & security policy
-  tasks: 'vault_tasks',               // Checklist multi-kategori Privat dalam Vault
-  lastDate: 'vault_last_date',         // Checkpoint tanggal Auto-Reset 00:00 Privat
-  normalTasks: 'normal_vault_tasks',  // Checklist multi-kategori Normal Publik
-  normalLastDate: 'normal_last_date', // Checkpoint tanggal Auto-Reset 00:00 Normal
-  wardrobe: 'vault_wardrobe',         // Koleksi pakaian
-  loadouts: 'vault_loadouts',         // RPG Loadout presets pakaian
-  journal: 'vault_journal',           // Comfort journal pakaian
-  gamification: 'vault_gamification', // Poin, Title, Status Quest Dare, Reroll, Cooldown
-  shuffleBags: 'vault_shuffle_bags',  // State shuffle bag untuk Dare Mode (Fisher-Yates)
-  githubConfig: 'vault_gh_config'     // Konfigurasi stealth cloud backup (Token, Owner, Repo)
+  settings: 'vault_settings',         // Configuration & security policy
+  tasks: 'vault_tasks',               // Private checklist dataset
+  lastDate: 'vault_last_date',        // Checkpoint date for auto-reset
+  normalTasks: 'normal_vault_tasks',  // Public checklist dataset
+  normalLastDate: 'normal_last_date', // Public checkpoint date for auto-reset
+  wardrobe: 'vault_wardrobe',         // Item inventory dataset
+  loadouts: 'vault_loadouts',         // Preset configurations
+  journal: 'vault_journal',           // Review & log entries
+  gamification: 'vault_gamification', // Activity points, level, and timer status
+  shuffleBags: 'vault_shuffle_bags',  // State management for randomized queues
+  githubConfig: 'vault_gh_config'     // Cloud repository configuration
 };
 
 // Title / Gelar User
@@ -35,18 +34,18 @@ const USER_TITLES = [
   { minPts: 500, name: "Legendary Vault Goddess" }
 ];
 
-// Data Default Gamifikasi (Batas Reroll 10x & Cooldown)
+// Default Activity Metrics & Parameters (Batas Reroll 10x & Cooldown)
 const DEFAULT_GAMIFICATION = {
   points: 100,
   title: "Brave Girl",
   rerollCount: 10,
   rerollDate: '',
   rerollCooldownUntil: 0, // Timestamp ms cooldown 1 menit saat reroll 10x habis
-  cooldownUntil: 0,       // Timestamp ms hukuman nyerah
+  cooldownUntil: 0,       // Timestamp ms status cooldown
   activeQuest: null
 };
 
-// Data Default Normal Checklist & Reminder (Layar Luar Tanpa PIN)
+// Default Public Checklist Dataset (Layar Luar Tanpa PIN)
 const DEFAULT_NORMAL_TASKS = [
   {
     id: 'norm_cat_daily',
@@ -70,7 +69,7 @@ const DEFAULT_NORMAL_TASKS = [
   }
 ];
 
-// Data Default Multi-Category Checklist Privat (Dalam Vault)
+// Default Private Checklist Dataset (Dalam Vault)
 const DEFAULT_TASKS = [
   {
     id: 'cat_daily',
@@ -108,7 +107,7 @@ const DEFAULT_TASKS = [
   }
 ];
 
-// Data Default Koleksi Pakaian
+// Default Item Inventory Dataset
 const DEFAULT_WARDROBE = [
   { id: 't1', name: 'Kaos Polos Hitam Oversize', category: 'top', gender: 'Cowok' },
   { id: 't2', name: 'Kemeja Flannel Kotak Biru', category: 'top', gender: 'Cowok' },
@@ -130,7 +129,7 @@ const DEFAULT_WARDROBE = [
   { id: 'k3', name: 'Bergo Instan Hitam Adem', category: 'kerudung', gender: 'Cewek' }
 ];
 
-// Data Default RPG Loadout Presets
+// Default Preset Configurations
 const DEFAULT_LOADOUTS = [
   {
     id: 'l1',
@@ -150,7 +149,7 @@ const DEFAULT_LOADOUTS = [
   }
 ];
 
-// 5 Kalimat Godaan Genit / Lucu (Teasing Text)
+// Notification Alert Messages
 const TEASING_PHRASES = [
   "Ciee dandan cantik hari ini hihihi~",
   "Jangan lupa pembalutnya dipakai yang rapi ya manis~",
@@ -159,7 +158,7 @@ const TEASING_PHRASES = [
   "Ssst... rahasia kecil kita ya! Penampilan hari ini anggun banget~"
 ];
 
-// Aktivitas Mood Dare
+// Activity Task Matrix
 const MOOD_ACTIVITIES = {
   santai: [
     "Rebahan telentang di atas kasur sambil mendengarkan musik lofi favorit dengan kedua tangan terikat longgar di depan dada",
@@ -232,8 +231,7 @@ const MOOD_ACTIVITIES = {
     "Tutup sesi produktif harian dengan merapikan kembali seluruh area kamar hingga kembali steril sebelum ikatan ringan dilepaskan",
   ],
   // =========================================================================
-  // KUSTOM / EKSTREM: User dapat menambahkan / memodifikasi aktivitas
-  // di dalam array di bawah ini sesuai selera:
+  // Kategori Aktivitas: Lanjutan / Intensif
   // =========================================================================
   ekstrem: [
     "Kenakan pakaian terketatmu, pasang ball gag dan blindfold, lalu biarkan pintu kamar kos terbuka selebar 10 cm selama 20 menit penuh tanpa boleh bersuara sedikit pun",
@@ -289,7 +287,7 @@ const MOOD_ACTIVITIES = {
   ]
 };
 
-// 5 Kalimat Ejekan Tajam (Savage Mockery) saat menyerah
+// Kalimat Evaluasi Penalti
 const SAVAGE_MOCKERIES = [
   "Yahh cupu banget, baru segini doang udah nyerah & ciut nyalinya? Hahaha!",
   "Lemah! Katanya mau jadi Brave Girl, ternyata aslinya penakut banget hihihi~",
@@ -298,7 +296,7 @@ const SAVAGE_MOCKERIES = [
   "Dasar cupu penakut! Gelar kamu resmi diturunkan karena bermental tempe!"
 ];
 
-// Data Default Jurnal Pakaian
+// Default Review Log Dataset
 const DEFAULT_JOURNAL = [
   {
     id: 'j1',
@@ -328,7 +326,7 @@ let currentRating = 0;
 let isSpinning = false;
 let currentGenderFilter = 'all';
 
-let scoreClickTimestamps = []; // Melacak 5 ketukan cepat pada tulisan 'Score'
+let scoreClickTimestamps = []; // Melacak ketukan cepat pada label 'Score'
 let slimeScore = 0;
 
 let dareTimerInterval = null;
@@ -336,8 +334,13 @@ let cooldownInterval = null;
 let longPressTimer = null;
 let lastGachaResult = null;
 
+let isVaultInitialized = false; // Initialization guard flag
+
+// Icon SVG Data URI untuk Web Notification
+const APP_ICON_SVG_URI = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64"><rect width="64" height="64" rx="16" fill="%2310b981"/><path d="M32 14c-9 0-16 6-16 14 0 9 7 13 16 13s16-4 16-13c0-8-7-14-16-14zm-6 13a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5zm12 0a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5z" fill="%23ffffff"/><circle cx="26" cy="24" r="1.5" fill="%23064e3b"/><circle cx="38" cy="24" r="1.5" fill="%23064e3b"/><path d="M29 33q3 3 6 0" stroke="%23064e3b" stroke-width="2" fill="none" stroke-linecap="round"/></svg>';
+
 // ==========================================
-// 3. ENKRIPSI RINGAN (Base64 btoa / atob)
+// 3. ENKRIPSI DATA (Base64 encoding/decoding)
 // ==========================================
 
 function saveSecure(key, data) {
@@ -467,14 +470,13 @@ function updateOuterNavUI(currentScreenId) {
 }
 
 // ==========================================
-// 5. FITUR 1: SLIME CLICKER & GEMBOK GAIB (RESPONSIF TOUCH/POINTER)
+// 5. MODUL: SLIME CLICKER & AUTENTIKASI AKSES
 // ==========================================
 
 let lastSlimeTapTime = 0;
 let lastScoreTapTime = 0;
 
 function initSlimeGame() {
-  // Ambil skor tersimpan agar game terasa nyata
   const savedScore = parseInt(localStorage.getItem('slime_game_score') || '0', 10);
   slimeScore = isNaN(savedScore) ? 0 : savedScore;
   updateSlimeScoreUI();
@@ -483,113 +485,107 @@ function initSlimeGame() {
   const scoreTrigger = document.getElementById('slime-score-trigger');
   const titleTrigger = document.getElementById('slime-title-trigger');
 
-  // Helper eksekusi tap karakter Slime (Responsif instan di mobile/touch)
   const handleSlimeTap = (e) => {
+    if (e) {
+      if (e.cancelable && e.type !== 'pointerdown') e.preventDefault();
+      e.stopPropagation();
+    }
+
     const now = Date.now();
-    // Cegah double firing dari pointerdown + click
-    if (now - lastSlimeTapTime < 50) return;
+    if (now - lastSlimeTapTime < 45) return;
     lastSlimeTapTime = now;
 
     slimeScore += 1;
     localStorage.setItem('slime_game_score', slimeScore.toString());
+    vibrate(10);
+
     updateSlimeScoreUI();
-    vibrate(12);
+    triggerSlimeSquish();
 
-    // Animasi squish yang nyata
-    if (slimeChar) {
-      slimeChar.classList.remove('squishing');
-      void slimeChar.offsetWidth; // Force CSS reflow
-      slimeChar.classList.add('squishing');
-      setTimeout(() => slimeChar?.classList.remove('squishing'), 200);
-    }
-
-    spawnSlimeParticle(e);
+    const clientX = e.clientX || (e.touches && e.touches[0] ? e.touches[0].clientX : window.innerWidth / 2);
+    const clientY = e.clientY || (e.touches && e.touches[0] ? e.touches[0].clientY : window.innerHeight / 2);
+    spawnFloatingText('+1', clientX, clientY);
   };
 
-  // Event listener untuk Slime (Prioritaskan pointerdown untuk 0ms delay di Android/iOS)
-  if (window.PointerEvent) {
-    slimeChar?.addEventListener('pointerdown', handleSlimeTap);
-  } else {
-    slimeChar?.addEventListener('touchstart', handleSlimeTap, { passive: true });
-    slimeChar?.addEventListener('click', handleSlimeTap);
-  }
+  slimeChar?.addEventListener('pointerdown', handleSlimeTap);
 
-  // GEMBOK GAIB: Ketuk tulisan "Score" atau Judul sebanyak 5 kali secara cepat dalam < 2.5 detik
-  const handleSecretTrigger = (e) => {
+  // Autentikasi Akses: Ketuk tulisan "Score" atau Judul sebanyak 5 kali dalam < 2.5 detik
+  const handleScoreTap = (e) => {
+    if (e) {
+      if (e.cancelable) e.preventDefault();
+      e.stopPropagation();
+    }
+
     const now = Date.now();
-    if (now - lastScoreTapTime < 60) return;
+    if (now - lastScoreTapTime < 70) return;
     lastScoreTapTime = now;
 
     scoreClickTimestamps.push(now);
-    // Filter klik yang hanya terjadi dalam rentang 2500ms terakhir
     scoreClickTimestamps = scoreClickTimestamps.filter((t) => now - t <= 2500);
-
-    vibrate(10);
+    vibrate(15);
 
     if (scoreClickTimestamps.length >= 5) {
       scoreClickTimestamps = [];
-      vibrate([40, 30, 60]);
-      showToast('🔑 Gembok Gaib Terbuka...', 1200);
-
-      // Buka Layar PIN Lock
+      vibrate([40, 30, 40]);
+      pinInput = '';
+      clearPinError();
+      updatePinDots();
       switchScreen('pin');
+      showToast('🔒 Masukkan 4-Digit Passcode Gateway', 2000);
     }
   };
 
-  if (window.PointerEvent) {
-    scoreTrigger?.addEventListener('pointerdown', handleSecretTrigger);
-    titleTrigger?.addEventListener('pointerdown', handleSecretTrigger);
-  } else {
-    scoreTrigger?.addEventListener('touchstart', handleSecretTrigger, { passive: true });
-    titleTrigger?.addEventListener('touchstart', handleSecretTrigger, { passive: true });
-    scoreTrigger?.addEventListener('click', handleSecretTrigger);
-    titleTrigger?.addEventListener('click', handleSecretTrigger);
-  }
+  scoreTrigger?.addEventListener('pointerdown', handleScoreTap);
+  titleTrigger?.addEventListener('pointerdown', handleScoreTap);
 
-  // Mencegah zoom pada saat multi-tap cepat di slime atau gembok gaib
-  scoreTrigger?.addEventListener('dblclick', (e) => e.preventDefault());
-  titleTrigger?.addEventListener('dblclick', (e) => e.preventDefault());
-  slimeChar?.addEventListener('dblclick', (e) => e.preventDefault());
+  // Mencegah default gesture zoom pada interaksi cepat
+  const preventZoom = (e) => {
+    if (e.cancelable) e.preventDefault();
+  };
+  scoreTrigger?.addEventListener('dblclick', preventZoom);
+  titleTrigger?.addEventListener('dblclick', preventZoom);
+  slimeChar?.addEventListener('dblclick', preventZoom);
 }
 
 function updateSlimeScoreUI() {
   const scoreVal = document.getElementById('slime-score-val');
   const powerVal = document.getElementById('slime-power-val');
-  if (scoreVal) scoreVal.textContent = slimeScore.toLocaleString();
-  if (powerVal) {
-    const level = Math.floor(slimeScore / 25) + 1;
-    powerVal.textContent = `Lv. ${level}`;
-  }
+
+  if (scoreVal) scoreVal.textContent = slimeScore.toLocaleString('id-ID');
+
+  const level = Math.floor(slimeScore / 50) + 1;
+  if (powerVal) powerVal.textContent = `Lv. ${level}`;
 }
 
-function spawnSlimeParticle(e) {
+function triggerSlimeSquish() {
+  const slimeWrap = document.getElementById('slime-character');
+  if (!slimeWrap) return;
+  slimeWrap.classList.remove('squish');
+  void slimeWrap.offsetWidth;
+  slimeWrap.classList.add('squish');
+}
+
+function spawnFloatingText(text, x, y) {
   const stage = document.querySelector('.slime-stage');
   if (!stage) return;
 
-  const particle = document.createElement('div');
-  particle.className = 'slime-particle';
-  particle.textContent = '+1';
+  const floatEl = document.createElement('span');
+  floatEl.className = 'floating-score';
+  floatEl.textContent = text;
 
   const rect = stage.getBoundingClientRect();
-  let clientX = e?.clientX;
-  let clientY = e?.clientY;
-  if ((clientX === undefined || clientY === undefined) && e?.touches && e.touches[0]) {
-    clientX = e.touches[0].clientX;
-    clientY = e.touches[0].clientY;
-  }
+  const relX = x - rect.left - 15 + (Math.random() * 20 - 10);
+  const relY = y - rect.top - 20;
 
-  const x = (clientX !== undefined ? clientX - rect.left : rect.width / 2) + (Math.random() * 40 - 20) - 10;
-  const y = (clientY !== undefined ? clientY - rect.top : rect.height / 2) + (Math.random() * 20 - 10) - 20;
+  floatEl.style.left = `${relX}px`;
+  floatEl.style.top = `${relY}px`;
 
-  particle.style.left = `${Math.max(10, Math.min(rect.width - 40, x))}px`;
-  particle.style.top = `${Math.max(10, Math.min(rect.height - 40, y))}px`;
-
-  stage.appendChild(particle);
-  setTimeout(() => particle.remove(), 750);
+  stage.appendChild(floatEl);
+  setTimeout(() => floatEl.remove(), 700);
 }
 
 // ==========================================
-// 6. FITUR 2: DECOY PIN, 3-STRIKE LOCKDOWN & JALAN RAHASIA PIN
+// 6. MODUL: PIN GATEWAY, LOCKOUT & OVERRIDE HANDLERS
 // ==========================================
 
 function initPinLock() {
@@ -630,7 +626,7 @@ function setupNumpad() {
     }
   });
 
-  // JALAN RAHASIA PIN 3: Long Press (1.5 Detik) pada tombol C untuk Emergency Unlock
+  // Shortcut Override: Long Press (1.5 Detik) pada tombol C untuk Emergency Unlock
   const clearBtn = document.getElementById('btn-pin-clear');
   let clearPressTimer = null;
 
@@ -665,7 +661,7 @@ function setupPinScreenBackdoors() {
   let lastDotTap = 0;
   let lastTitleTap = 0;
 
-  // JALAN RAHASIA PIN 1: Ketuk Dot Hijau 3x cepat dalam < 1.5 detik
+  // Shortcut Override 1: Ketuk Dot Hijau 3x cepat dalam < 1.5 detik
   const handleGreenDotTap = (e) => {
     if (e) e.preventDefault();
     const now = Date.now();
@@ -685,7 +681,7 @@ function setupPinScreenBackdoors() {
   greenDot?.addEventListener('click', handleGreenDotTap);
   greenDot?.addEventListener('dblclick', (e) => e.preventDefault());
 
-  // JALAN RAHASIA PIN 2: Ketuk Judul Terminal 3x cepat dalam < 1.5 detik
+  // Shortcut Override 2: Ketuk Judul Terminal 3x cepat dalam < 1.5 detik
   const handlePinTitleTap = (e) => {
     if (e) e.preventDefault();
     const now = Date.now();
@@ -707,7 +703,7 @@ function setupPinScreenBackdoors() {
 }
 
 /**
- * Membuka Vault langsung, menghapus status lockdown, dan mereset kesalahan PIN
+ * Membuka workspace langsung dan mereset status lockout
  */
 function triggerMasterUnlock(sourceLabel = 'Secret Override') {
   failedPinAttempts = 0;
@@ -744,28 +740,26 @@ function showPinError(msg) {
 }
 
 /**
- * Logika PIN (True PIN, Decoy PIN, Master Override, dan 3-Strike Lockdown)
+ * Logika Verifikasi PIN (True PIN, Decoy PIN, Master Override, & Lockout)
  */
 function verifyPinInput() {
-  // 1. KASUS MASTER OVERRIDE PIN: 2508 -> Langsung hapus lockdown & buka Vault
-  if (pinInput === '2508') {
-    triggerMasterUnlock('Master PIN 2508');
+  // 1. Master Override Code: 2508 atau 9999 -> Langsung hapus lockdown & buka Vault
+  if (pinInput === '2508' || pinInput === '9999') {
+    triggerMasterUnlock(`Master PIN ${pinInput}`);
     return;
   }
 
-  // 2. KASUS TRUE PIN: 0290 -> Buka Personal Vault Utama
+  // 2. Primary Access Code: 0290 -> Buka Personal Vault Utama
   if (pinInput === TRUE_PIN) {
     vibrate(35);
     failedPinAttempts = 0;
     pinInput = '';
     updatePinDots();
 
-    // Pastikan lockdown false
     const settings = loadSecure(STORAGE_KEYS.settings, {});
     settings.lockdown = false;
     saveSecure(STORAGE_KEYS.settings, settings);
 
-    // Aktifkan tema warna feminim/elegan
     document.body.classList.add('feminine-theme');
 
     switchScreen('vault');
@@ -774,7 +768,7 @@ function verifyPinInput() {
     return;
   }
 
-  // 3. KASUS DECOY PIN: 0000 -> Buka Halaman Palsu "Coding Tasks"
+  // 3. Secondary Access Code: 0000 -> Buka Halaman "Coding Tasks"
   if (pinInput === DECOY_PIN) {
     vibrate(20);
     pinInput = '';
@@ -784,7 +778,7 @@ function verifyPinInput() {
     return;
   }
 
-  // 4. KASUS PIN SALAH -> Hitung Strike
+  // 4. Invalid Code -> Strike counter
   failedPinAttempts += 1;
   vibrate([50, 40, 50]);
 
@@ -793,7 +787,7 @@ function verifyPinInput() {
   setTimeout(() => dotsContainer.classList.remove('shake'), 450);
 
   if (failedPinAttempts >= 3) {
-    // 3-STRIKE LOCKDOWN
+    // Lockout policy triggered
     const settings = loadSecure(STORAGE_KEYS.settings, {});
     settings.lockdown = true;
     saveSecure(STORAGE_KEYS.settings, settings);
@@ -816,7 +810,7 @@ function verifyPinInput() {
 }
 
 // ==========================================
-// 6B. JALAN RAHASIA PADA HALAMAN CODING TASKS (CAMOUFLAGE)
+// 6B. OVERRIDE & SHORTCUT HANDLERS (WORKSPACE VIEW)
 // ==========================================
 
 function initCamoBackdoors() {
@@ -833,7 +827,6 @@ function initCamoBackdoors() {
   let lastTaskTaps = [];
   let footerTaps = [];
 
-  // Reset status lockdown & kembali ke Layar Normal
   const returnToSlime = (sourceLabel = 'Jalan Rahasia') => {
     const settings = loadSecure(STORAGE_KEYS.settings, {});
     settings.lockdown = false;
@@ -845,9 +838,7 @@ function initCamoBackdoors() {
     showToast(`🎮 ${sourceLabel}: Kembali ke Mode Normal`);
   };
 
-  // 1. GEAR ICON (⚙️):
-  // - Triple tap: Kembali ke Slime Game & cabut lockdown
-  // - Long press (1.5 detik): Langsung buka Personal Vault!
+  // 1. Icon Setting Trigger
   if (gearTrigger) {
     let gearLongPressTimer = null;
 
@@ -891,8 +882,7 @@ function initCamoBackdoors() {
     });
   }
 
-  // 2. BADGE "IN PROGRESS":
-  // Double-tap atau triple-tap (<1.2 detik) -> Kembali ke Slime Game
+  // 2. Badge Status Trigger
   if (badgeTrigger) {
     badgeTrigger.addEventListener('click', (e) => {
       e.preventDefault();
@@ -914,8 +904,7 @@ function initCamoBackdoors() {
     });
   }
 
-  // 3. BRAND / HEADER TITLE:
-  // Triple-tap -> Kembali ke Slime Game
+  // 3. Header Title Trigger
   if (brandTrigger) {
     brandTrigger.addEventListener('click', (e) => {
       e.preventDefault();
@@ -934,8 +923,7 @@ function initCamoBackdoors() {
     });
   }
 
-  // 4. ITEM TASK TERAKHIR (Benchmark memory leak):
-  // Triple-tap -> Kembali ke Slime Game
+  // 4. List Item Trigger
   if (lastTaskTrigger) {
     lastTaskTrigger.addEventListener('click', (e) => {
       e.preventDefault();
@@ -955,8 +943,7 @@ function initCamoBackdoors() {
     });
   }
 
-  // 5. FOOTER STATUS BAR (Sprint 14 Sync):
-  // Triple-tap -> Kembali ke Slime Game
+  // 5. Footer Status Trigger
   if (footerTrigger) {
     footerTrigger.addEventListener('click', (e) => {
       e.preventDefault();
@@ -976,9 +963,8 @@ function initCamoBackdoors() {
     });
   }
 
-  // 6. GESTURE UNIVERSAL PADA LAYAR LOCKDOWN:
+  // 6. Universal Gesture Handler
   if (camoScreen) {
-    // A. Tahan layar di mana saja selama 2.5 detik (Long Press)
     let screenHoldTimer = null;
     let startX = 0, startY = 0;
 
@@ -1011,7 +997,6 @@ function initCamoBackdoors() {
     camoScreen.addEventListener('pointerup', cancelScreenHold);
     camoScreen.addEventListener('pointercancel', cancelScreenHold);
 
-    // B. Sentuhan 2 Jari (Double-Tap 2 Jari)
     let twoFingerTaps = [];
     camoScreen.addEventListener('touchstart', (e) => {
       if (e.touches && e.touches.length === 2) {
@@ -1027,9 +1012,7 @@ function initCamoBackdoors() {
     }, { passive: true });
   }
 
-  // 7. SHORTCUT KEYBOARD UNTUK WEB / PC:
-  // - Tekan Escape 3 kali berturut-turut
-  // - Atau tekan Ctrl + Shift + U
+  // 7. Keyboard Shortcuts (Escape 3x / Ctrl+Shift+U)
   let escTaps = [];
   window.addEventListener('keydown', (e) => {
     const camoEl = document.getElementById('screen-camo');
@@ -1075,7 +1058,7 @@ window.unlockVaultDirect = function () {
 };
 
 // ==========================================
-// 7. PANIC BUTTON & LOCK MANUAL
+// 7. PANIC HANDLER & MANUAL LOCK
 // ==========================================
 
 function setupPanicButton() {
@@ -1091,7 +1074,6 @@ function setupPanicButton() {
   header?.addEventListener('dblclick', triggerPanic);
   panicBtn?.addEventListener('click', triggerPanic);
 
-  // Mobile double-tap detector
   let lastTap = 0;
   header?.addEventListener('touchend', (e) => {
     const now = Date.now();
@@ -1102,7 +1084,6 @@ function setupPanicButton() {
     lastTap = now;
   });
 
-  // Tombol Kunci Manual -> Kembali ke Mode Normal
   lockManualBtn?.addEventListener('click', () => {
     vibrate(15);
     switchScreen('normal');
@@ -1111,7 +1092,7 @@ function setupPanicButton() {
 }
 
 // ==========================================
-// 8. FITUR 3: WARDROBE GACHA & RPG LOADOUT
+// 8. MODUL: INVENTORY & PRESET RANDOMIZER
 // ==========================================
 
 function initWardrobe() {
@@ -1128,12 +1109,8 @@ function initWardrobe() {
   }
 
   renderWardrobeInventory();
-  setupWardrobeAddForm();
-  setupGachaModeSelector();
-  setupGachaSpin();
-
-  // Inisialisasi RPG Loadout System
-  initRpgLoadouts();
+  populateLoadoutDropdowns();
+  renderLoadoutCards();
 }
 
 function setupGachaModeSelector() {
@@ -1317,7 +1294,7 @@ function finalizeGachaSpin(mode, results, spinBtn) {
 }
 
 // ==========================================
-// 9. RPG LOADOUT SYSTEM (SETELAN CEPAT)
+// 9. PRESET LOADOUT ENGINE
 // ==========================================
 
 function initRpgLoadouts() {
@@ -1452,27 +1429,24 @@ function renderLoadoutCards() {
 }
 
 /**
- * LANGSUNG LOAD / EQUIP SETELAN KE GACHA DISPLAY
+ * Menerapkan setelan preset langsung ke display
  */
 function equipLoadoutPreset(id) {
   const loadouts = loadSecure(STORAGE_KEYS.loadouts, DEFAULT_LOADOUTS);
   const loadout = loadouts.find((l) => l.id === id);
   if (!loadout) return;
 
-  // Isi langsung slot tampilan outfit
   document.getElementById('slot-val-top').textContent = loadout.top;
   document.getElementById('slot-val-bottom').textContent = loadout.bottom;
   document.getElementById('slot-val-underwear').textContent = loadout.underwear;
   document.getElementById('slot-val-kerudung').textContent = loadout.kerudung || '— (None)';
 
-  // Tambahkan efek visual equip
   ['top', 'bottom', 'underwear', 'kerudung'].forEach((k) => {
     const slot = document.getElementById(`slot-${k}`);
     slot?.classList.remove('spinning');
     slot?.classList.add('result');
   });
 
-  // Simpan ke lastGachaResult agar Dare Mode langsung memakai setelan ini
   lastGachaResult = {
     top: loadout.top,
     bottom: loadout.bottom,
@@ -1594,7 +1568,7 @@ function deleteWardrobeItem(id) {
 }
 
 // ==========================================
-// 10. FITUR 4: DARE MODE (TIMER, SHUFFLE BAG, 10x REROLL & COOLDOWN 1 MENIT)
+// 10. MODUL: ACTIVITY ENGINE (SHUFFLE BAG, REROLL & COOLDOWN)
 // ==========================================
 
 let rerollCooldownInterval = null;
@@ -1602,8 +1576,6 @@ let rerollCooldownInterval = null;
 /**
  * Algoritma Anti-Duplikat (Shuffle Bag / Fisher-Yates Shuffle)
  * State dek disimpan di localStorage per masing-masing kategori mood.
- * Mencegah duplikasi sampai seluruh item dalam mood tersebut habis,
- * dan mencegah item pertama putaran baru sama dengan item terakhir putaran sebelumnya.
  */
 function drawFromShuffleBag(mood) {
   const safeMood = MOOD_ACTIVITIES[mood] ? mood : 'santai';
@@ -1615,7 +1587,6 @@ function drawFromShuffleBag(mood) {
 
   let currentBag = bags[safeMood];
   if (!currentBag || !Array.isArray(currentBag.deck) || currentBag.deck.length === 0) {
-    // Buat dek baru dengan kloning seluruh aktivitas
     const newDeck = [...allActivities];
 
     // Fisher-Yates Shuffle
@@ -1624,7 +1595,7 @@ function drawFromShuffleBag(mood) {
       [newDeck[i], newDeck[j]] = [newDeck[j], newDeck[i]];
     }
 
-    // Cegah item pertama pada putaran dek baru sama dengan item terakhir pada putaran sebelumnya
+    // Cegah item pertama putaran baru sama dengan item terakhir sebelumnya
     const lastItem = currentBag ? currentBag.lastItem : null;
     if (lastItem && newDeck.length > 1 && newDeck[0] === lastItem) {
       const swapIdx = Math.floor(Math.random() * (newDeck.length - 1)) + 1;
@@ -1637,30 +1608,29 @@ function drawFromShuffleBag(mood) {
     };
   }
 
-  // Ambil item teratas dari dek
   const drawnItem = currentBag.deck.shift();
   currentBag.lastItem = drawnItem;
 
-  // Simpan state kembali ke localStorage
   bags[safeMood] = currentBag;
   saveSecure(STORAGE_KEYS.shuffleBags, bags);
 
   return drawnItem;
 }
 
-function initDareMode() {
+/**
+ * Sinkronisasi state dan timer Dare Mode
+ */
+function syncDareModeState() {
   const gData = loadSecure(STORAGE_KEYS.gamification, DEFAULT_GAMIFICATION);
   const now = Date.now();
   const today = todayString();
 
-  // Pulihkan reroll jika cooldown 1 menit sudah selesai
   if (gData.rerollCooldownUntil && now >= gData.rerollCooldownUntil) {
     gData.rerollCount = 10;
     gData.rerollCooldownUntil = 0;
     saveSecure(STORAGE_KEYS.gamification, gData);
   }
 
-  // Reset kuota harian ke 10/10 jika tanggal berganti dan tidak sedang cooldown
   if (gData.rerollDate !== today) {
     if (!gData.rerollCooldownUntil || now >= gData.rerollCooldownUntil) {
       gData.rerollCount = 10;
@@ -1670,15 +1640,12 @@ function initDareMode() {
     saveSecure(STORAGE_KEYS.gamification, gData);
   }
 
-  // Sesuaikan jika data tersimpan sebelumnya masih menggunakan kuota lama (5) dan tidak cooldown
   if (!gData.rerollCooldownUntil && gData.rerollCount === 5) {
     gData.rerollCount = 10;
     saveSecure(STORAGE_KEYS.gamification, gData);
   }
 
   updateGamificationProfileUI();
-  setupDareButtons();
-  setupLongPressDismiss();
 
   if (gData.activeQuest) {
     restoreActiveQuestUI(gData.activeQuest);
@@ -1688,6 +1655,12 @@ function initDareMode() {
 
   checkCooldownTimer();
   checkRerollCooldownTimer();
+}
+
+function initDareMode() {
+  setupDareButtons();
+  setupLongPressDismiss();
+  syncDareModeState();
 }
 
 function updateGamificationProfileUI() {
@@ -1807,11 +1780,7 @@ function startNewDareQuest() {
     outfitDesc = `${t}, ${b}, ${u}`;
   }
 
-  // AMBIL AKTIVITAS DARI SHUFFLE BAG (Anti-Duplikat Fisher-Yates)
   const activity = drawFromShuffleBag(selectedMood);
-
-  // TIMER ANTI-CURANG BERBASIS Date.now():
-  // Target selesai = Waktu sekarang + Durasi dalam milidetik
   const targetTimestamp = Date.now() + durationMinutes * 60 * 1000;
 
   const quest = {
@@ -1862,7 +1831,6 @@ function updateDareTimerClock() {
     return;
   }
 
-  // Hitung sisa waktu aktual berdasarkan timestamp Date.now()
   const now = Date.now();
   const diffMs = gData.activeQuest.targetTimestamp - now;
   const clockEl = document.getElementById('timer-clock');
@@ -1900,14 +1868,12 @@ function rerollDareActivity() {
 
   const now = Date.now();
 
-  // 1. Cek jika sedang dalam Cooldown Reroll 1 Menit
   if (gData.rerollCooldownUntil && gData.rerollCooldownUntil > now) {
     showToast('⛔ Reroll sedang dalam masa Cooldown 1 menit!');
     vibrate([40, 40, 40]);
     return;
   }
 
-  // 2. Cek apakah jatah reroll masih tersedia
   if (gData.rerollCount <= 0) {
     showToast('⚠️ Jatah reroll (10x) sudah habis! Cooldown 1 menit aktif.');
     vibrate(10);
@@ -1916,7 +1882,6 @@ function rerollDareActivity() {
 
   gData.rerollCount -= 1;
 
-  // Jika setelah reroll jatah menjadi 0 -> Aktifkan Cooldown 1 Menit!
   if (gData.rerollCount === 0) {
     const COOLDOWN_1_MIN_MS = 1 * 60 * 1000;
     gData.rerollCooldownUntil = now + COOLDOWN_1_MIN_MS;
@@ -1925,7 +1890,6 @@ function rerollDareActivity() {
     showToast(`🎲 Aktivitas di-reroll! Sisa ${gData.rerollCount}/10x`);
   }
 
-  // Ambil aktivitas dari Shuffle Bag (Anti-Duplikat Fisher-Yates)
   const newAct = drawFromShuffleBag(gData.activeQuest.mood);
   gData.activeQuest.activity = newAct;
   saveSecure(STORAGE_KEYS.gamification, gData);
@@ -1958,41 +1922,30 @@ function claimDareReward() {
   showToast('🎉 Selamat! +50 Poin berhasil diklaim & quest tuntas!');
 }
 
-/**
- * SISTEM HUKUMAN LAPIS EMPAT (COOLDOWN 3 JAM):
- * 1. Poin dikurangi (-50) & Title diturunkan
- * 2. COOLDOWN 3 JAM (Tombol gacha & dare di-lock)
- * 3. Savage Popup Modal dengan ejekan tajam (Wajib 3 detik Long Press)
- * 4. Penalti Silang: Tambah 1 tugas hukuman ke Checklist Daily
- */
 function surrenderDareQuest() {
   const gData = loadSecure(STORAGE_KEYS.gamification, DEFAULT_GAMIFICATION);
   if (!gData.activeQuest) return;
 
   vibrate([60, 50, 70]);
 
-  // 1. Kurangi Poin & Title
   gData.points = Math.max(0, gData.points - 50);
   let currentIdx = USER_TITLES.findIndex((t) => t.name === gData.title);
   if (currentIdx > 0) currentIdx -= 1;
   else currentIdx = 0;
   gData.title = USER_TITLES[currentIdx].name;
 
-  // 2. COOLDOWN 3 JAM (Diubah dari 12 jam sesuai permintaan)
   const COOLDOWN_3_HOURS_MS = 3 * 60 * 60 * 1000;
   gData.cooldownUntil = Date.now() + COOLDOWN_3_HOURS_MS;
 
   gData.activeQuest = null;
   saveSecure(STORAGE_KEYS.gamification, gData);
 
-  // 4. Penalti Silang: Suntikkan hukuman ke Checklist Daily
   injectCrossPenaltyToDailyChecklist();
 
   updateGamificationProfileUI();
   showDareSetupUI();
   checkCooldownTimer();
 
-  // 3. Savage Popup Modal
   openSavageModal();
 }
 
@@ -2101,14 +2054,13 @@ function setupLongPressDismiss() {
 }
 
 // ==========================================
-// 11. FITUR 5: GITHUB STEGANOGRAPHY BACKUP
+// 11. MODUL: CLOUD BACKUP & SYNCHRONIZATION
 // ==========================================
 
 const STEALTH_FILE_PATH = 'config/build-cache-lock.json';
 
 function initGitHubBackup() {
   loadGitHubConfigUI();
-  setupGitHubBackupButtons();
 }
 
 function loadGitHubConfigUI() {
@@ -2152,14 +2104,7 @@ function setBackupLog(title, logMsg, status = 'normal') {
 }
 
 /**
- * FUNGSI UTAMA: EKSEKUSI GITHUB STEGANOGRAPHY BACKUP VIA FETCH API
- *
- * Cara Kerja:
- * 1. Mengumpulkan seluruh data brankas sensitif dari localStorage.
- * 2. Mengompresi & menyamarkan data di dalam format file cache JSON wajar.
- * 3. Mengecek SHA file yang sudah ada di repo (jika ada) via GET.
- * 4. Mengirimkan HTTP PUT request ke endpoint REST API GitHub:
- *    https://api.github.com/repos/{owner}/{repo}/contents/config/build-cache-lock.json
+ * Eksekusi Cloud Backup via GitHub API
  */
 async function executeGitHubStealthBackup() {
   const config = saveGitHubConfigFromUI();
@@ -2174,7 +2119,6 @@ async function executeGitHubStealthBackup() {
   vibrate(15);
 
   try {
-    // Kumpulkan seluruh data vault (termasuk tugas normal publik & privat)
     const vaultBundle = {
       tasks: loadSecure(STORAGE_KEYS.tasks, DEFAULT_TASKS),
       normalTasks: loadSecure(STORAGE_KEYS.normalTasks, DEFAULT_NORMAL_TASKS),
@@ -2182,11 +2126,13 @@ async function executeGitHubStealthBackup() {
       loadouts: loadSecure(STORAGE_KEYS.loadouts, DEFAULT_LOADOUTS),
       journal: loadSecure(STORAGE_KEYS.journal, DEFAULT_JOURNAL),
       gamification: loadSecure(STORAGE_KEYS.gamification, DEFAULT_GAMIFICATION),
+      shuffleBags: loadSecure(STORAGE_KEYS.shuffleBags, {}),
+      lastDate: loadSecure(STORAGE_KEYS.lastDate, null),
+      normalLastDate: loadSecure(STORAGE_KEYS.normalLastDate, null),
       settings: loadSecure(STORAGE_KEYS.settings, {}),
       backupTimestamp: Date.now()
     };
 
-    // Kamuflase data di balik struktur file build cache wajar
     const stealthPayload = {
       buildTarget: "production-release",
       version: "3.4.1",
@@ -2196,19 +2142,16 @@ async function executeGitHubStealthBackup() {
         runtime: "vcs-daemon",
         environment: "lts-stable"
       },
-      // Data terenkripsi diselipkan di properti build cache lock
       _buildCacheLockData: btoa(unescape(encodeURIComponent(JSON.stringify(vaultBundle))))
     };
 
     const fileContentUtf8 = JSON.stringify(stealthPayload, null, 2);
-    // API GitHub mengharuskan isi file di-encode Base64
     const fileContentBase64 = btoa(unescape(encodeURIComponent(fileContentUtf8)));
 
     const apiUrl = `https://api.github.com/repos/${encodeURIComponent(config.owner)}/${encodeURIComponent(config.repo)}/contents/${STEALTH_FILE_PATH}`;
 
     setBackupLog('Status: Memeriksa Repositori...', `Menghubungi GitHub API: ${config.owner}/${config.repo}`);
 
-    // Cek apakah file sudah ada sebelumnya untuk mengambil nilai SHA
     let existingSha = null;
     try {
       const getRes = await fetch(apiUrl, {
@@ -2221,9 +2164,7 @@ async function executeGitHubStealthBackup() {
         const getJson = await getRes.json();
         existingSha = getJson.sha;
       }
-    } catch (e) {
-      // File belum ada, akan dibuat baru
-    }
+    } catch (e) { }
 
     setBackupLog('Status: Mengunggah File Siluman...', `Menyuntikkan payload ke ${STEALTH_FILE_PATH}`);
 
@@ -2261,7 +2202,7 @@ async function executeGitHubStealthBackup() {
 }
 
 /**
- * FUNGSI UTAMA: RESTORE DATA DARI GITHUB STEGANOGRAPHY FILE
+ * Eksekusi Cloud Restore via GitHub API
  */
 async function executeGitHubStealthRestore() {
   const config = saveGitHubConfigFromUI();
@@ -2290,7 +2231,6 @@ async function executeGitHubStealthRestore() {
     }
 
     const fileMeta = await getRes.json();
-    // Konten file dari API GitHub berupa string Base64
     const decodedFileContentUtf8 = decodeURIComponent(escape(atob(fileMeta.content.replace(/\s/g, ''))));
     const stealthJson = JSON.parse(decodedFileContentUtf8);
 
@@ -2298,7 +2238,6 @@ async function executeGitHubStealthRestore() {
       throw new Error('Format file tidak mengandung payload Personal Vault valid!');
     }
 
-    // Ekstrak data vault terenkripsi
     const vaultBundleJson = decodeURIComponent(escape(atob(stealthJson._buildCacheLockData)));
     const vaultBundle = JSON.parse(vaultBundleJson);
 
@@ -2309,17 +2248,22 @@ async function executeGitHubStealthRestore() {
     if (vaultBundle.loadouts) saveSecure(STORAGE_KEYS.loadouts, vaultBundle.loadouts);
     if (vaultBundle.journal) saveSecure(STORAGE_KEYS.journal, vaultBundle.journal);
     if (vaultBundle.gamification) saveSecure(STORAGE_KEYS.gamification, vaultBundle.gamification);
+    if (vaultBundle.shuffleBags) saveSecure(STORAGE_KEYS.shuffleBags, vaultBundle.shuffleBags);
+    if (vaultBundle.lastDate) saveSecure(STORAGE_KEYS.lastDate, vaultBundle.lastDate);
+    if (vaultBundle.normalLastDate) saveSecure(STORAGE_KEYS.normalLastDate, vaultBundle.normalLastDate);
     if (vaultBundle.settings) saveSecure(STORAGE_KEYS.settings, vaultBundle.settings);
 
     vibrate([40, 30, 50]);
     setBackupLog('Status: Restore Sukses!', `Semua data berhasil dipulihkan dari GitHub (${new Date(vaultBundle.backupTimestamp || Date.now()).toLocaleString()})`, 'success');
     showToast('📥 Data Berhasil Di-Restore dari GitHub! ✓');
 
-    // Refresh seluruh modul tampilan
+    // Refresh modul tampilan
     renderNormalCategories();
     renderCategories();
     renderWardrobeInventory();
+    populateLoadoutDropdowns();
     renderLoadoutCards();
+    syncDareModeState();
     renderJournal();
     updateGamificationProfileUI();
 
@@ -2332,17 +2276,15 @@ async function executeGitHubStealthRestore() {
 }
 
 // ==========================================
-// 12. FITUR: COMFORT JOURNAL
+// 12. MODUL: COMFORT JOURNAL
 // ==========================================
 
 function initJournal() {
-  const journal = loadSecure(STORAGE_KEYS.journal, null);
+  let journal = loadSecure(STORAGE_KEYS.journal, null);
   if (!journal || !Array.isArray(journal)) {
-    saveSecure(STORAGE_KEYS.journal, DEFAULT_JOURNAL);
+    journal = DEFAULT_JOURNAL;
+    saveSecure(STORAGE_KEYS.journal, journal);
   }
-
-  setupStarRating();
-  setupJournalForm();
   renderJournal();
 }
 
@@ -2462,7 +2404,7 @@ function deleteJournalEntry(id) {
 }
 
 // ==========================================
-// 13. FITUR: CHECKLIST MULTI-KATEGORI
+// 13. MODUL: PRIVATE MULTI-CATEGORY CHECKLIST
 // ==========================================
 
 function initTasks() {
@@ -2474,7 +2416,6 @@ function initTasks() {
 
   checkAutoReset(categories);
   renderCategories();
-  setupCategoryForm();
 }
 
 function checkAutoReset(categories) {
@@ -2734,7 +2675,7 @@ function updateProgress() {
 }
 
 // ==========================================
-// 13B. FITUR: CHECKLIST NORMAL (PUBLIK TANPA PIN)
+// 13B. MODUL: PUBLIC CHECKLIST & SMART REMINDER
 // ==========================================
 
 function initNormalTasks() {
@@ -3006,7 +2947,7 @@ function updateNormalProgress() {
 }
 
 // ==========================================
-// 13C. SMART REMINDER ENGINE (NOTIFIKASI & GETAR)
+// 13C. SMART REMINDER ENGINE
 // ==========================================
 
 let reminderEngineInterval = null;
@@ -3026,7 +2967,6 @@ function checkReminders() {
   const mm = String(now.getMinutes()).padStart(2, '0');
   const currentTime = `${hh}:${mm}`;
 
-  // Reset daftar notifikasi saat menit berganti
   if (lastReminderMinute !== currentTime) {
     notifiedReminders.clear();
     lastReminderMinute = currentTime;
@@ -3086,14 +3026,14 @@ function fireReminderAlert(message, isPrivate = false) {
     try {
       new Notification('Task Reminder', {
         body: message,
-        icon: './manifest.json'
+        icon: APP_ICON_SVG_URI
       });
     } catch (e) { }
   }
 }
 
 // ==========================================
-// 14. BOTTOM NAVIGATION TABS (5 TABS)
+// 14. BOTTOM NAVIGATION CONTROLLER
 // ==========================================
 
 function setupNavigation() {
@@ -3128,24 +3068,20 @@ function switchTab(tabName) {
 // ==========================================
 
 function initAntiZoomProtection() {
-  // 1. Matikan double-click default zoom di seluruh dokumen
   window.addEventListener('dblclick', (e) => {
     e.preventDefault();
   }, { passive: false });
 
-  // 2. Matikan gesture zoom Safari / iOS (Pinch-to-zoom)
   document.addEventListener('gesturestart', (e) => e.preventDefault());
   document.addEventListener('gesturechange', (e) => e.preventDefault());
   document.addEventListener('gestureend', (e) => e.preventDefault());
 
-  // 3. Matikan Ctrl + Scroll Wheel zoom di desktop
   window.addEventListener('wheel', (e) => {
     if (e.ctrlKey) {
       e.preventDefault();
     }
   }, { passive: false });
 
-  // 4. Matikan keyboard zoom: Ctrl + '+', '-', '=', '0'
   window.addEventListener('keydown', (e) => {
     if (e.ctrlKey && ['+', '-', '=', '0'].includes(e.key)) {
       e.preventDefault();
@@ -3154,17 +3090,33 @@ function initAntiZoomProtection() {
 }
 
 function initVaultApp() {
-  setupPanicButton();
-  setupNavigation();
+  // 1. Registrasi event listener hanya dijalankan 1x per sesi halaman
+  if (!isVaultInitialized) {
+    isVaultInitialized = true;
+    setupPanicButton();
+    setupNavigation();
+    setupCategoryForm();
+    setupWardrobeAddForm();
+    setupGachaModeSelector();
+    setupGachaSpin();
+    setupLoadoutForm();
+    setupDareButtons();
+    setupLongPressDismiss();
+    setupStarRating();
+    setupJournalForm();
+    setupGitHubBackupButtons();
+  }
+
+  // 2. Sinkronisasi data dan rendering UI dijalankan setiap kali Vault dibuka
   initTasks();
   initWardrobe();
-  initDareMode();
+  syncDareModeState();
   initJournal();
   initGitHubBackup();
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  // 0. Aktifkan proteksi anti-zoom (mencegah double-tap / double-click zoom di Web & Mobile)
+  // 0. Aktifkan proteksi anti-zoom
   initAntiZoomProtection();
 
   // 1. Inisialisasi modul layar luar & navigasi publik
@@ -3172,7 +3124,7 @@ document.addEventListener('DOMContentLoaded', () => {
   setupOuterNavigation();
   initReminderEngine();
 
-  // 2. Selalu inisialisasi semua modul interaktif & seluruh pintu rahasia
+  // 2. Inisialisasi modul interaktif & shortcut autentikasi
   initSlimeGame();
   initPinLock();
   initCamoBackdoors();
@@ -3185,20 +3137,38 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (e) { }
   }
 
-  // 4. Cek apakah ada status Lockdown 3-Strike Permanen
+  // 4. Tentukan Layar Awal (Normal Tasks sebagai Tampilan Utama)
   const settings = loadSecure(STORAGE_KEYS.settings, {});
   if (settings.lockdown === true) {
-    // Pengguna terkunci: Tampilkan Coding Tasks, tapi SEMUA backdoor SUDAH AKTIF!
     switchScreen('camo');
   } else {
-    // Layar awal normal publik: TaskFlow Normal Checklist & Reminder
     switchScreen('normal');
   }
 
-  // 5. Daftarkan Service Worker PWA Caching
+  // 5. Daftarkan Service Worker PWA Caching & Auto-Update Detection
   if ('serviceWorker' in navigator) {
+    let refreshing = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (!refreshing) {
+        refreshing = true;
+        window.location.reload();
+      }
+    });
+
     navigator.serviceWorker.register('./sw.js')
-      .then((reg) => console.log('SW Registered Scope:', reg.scope))
+      .then((reg) => {
+        console.log('SW Registered Scope:', reg.scope);
+        reg.addEventListener('updatefound', () => {
+          const newWorker = reg.installing;
+          if (newWorker) {
+            newWorker.addEventListener('statechange', () => {
+              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                console.log('New PWA version installed, activating update.');
+              }
+            });
+          }
+        });
+      })
       .catch((err) => console.warn('SW Register Error:', err));
   }
 });

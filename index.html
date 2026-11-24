@@ -72,10 +72,10 @@
       <header class="slime-header">
         <div class="slime-title-wrap">
           <span class="game-badge">MINI-GAME</span>
-          <!-- Secondary backdoor trigger -->
+          <!-- Secondary Action Trigger -->
           <h1 class="game-title" id="slime-title-trigger">Guard Slime Clicker</h1>
         </div>
-        <!-- GEMBOK GAIB UTAMA: Ketuk teks 'Score' 5x cepat dalam <2.5 detik untuk membuka PIN Lock -->
+        <!-- Primary Action Trigger: Ketuk 5x pada Score untuk membuka prompt autentikasi -->
         <div id="slime-score-trigger" class="slime-score-box" role="button" tabindex="0" title="Slime Score">
           <span class="score-label">Score</span>
           <strong class="score-number" id="slime-score-val">0</strong>
@@ -151,16 +151,16 @@
   </nav>
 
   <!-- ======================================================== -->
-  <!-- 2. PIN LOCK SCREEN (DECOY PIN & 3-STRIKE LOCKDOWN)       -->
+  <!-- 2. PIN AUTHENTICATION GATEWAY                            -->
   <!-- ======================================================== -->
   <div id="screen-pin" class="screen-view hidden">
     <div class="pin-terminal">
       <div class="terminal-header" id="pin-terminal-header">
         <span class="terminal-dot red" id="pin-dot-red"></span>
         <span class="terminal-dot yellow" id="pin-dot-yellow"></span>
-        <!-- JALAN RAHASIA PIN 1: Ketuk 3x Dot Hijau untuk langsung buka Vault & reset lockdown -->
+        <!-- Override Trigger 1: Status Dot Action -->
         <span class="terminal-dot green" id="pin-secret-green-dot" title="Secret Override Dot"></span>
-        <!-- JALAN RAHASIA PIN 2: Triple-tap judul terminal -->
+        <!-- Override Trigger 2: Terminal Title Action -->
         <span class="terminal-title" id="pin-secret-title">AUTH_GATEWAY // v3.0</span>
       </div>
 
@@ -192,7 +192,7 @@
           <button class="num-btn" data-num="7">7</button>
           <button class="num-btn" data-num="8">8</button>
           <button class="num-btn" data-num="9">9</button>
-          <!-- JALAN RAHASIA PIN 3: Tahan tombol C selama 2 detik untuk emergency unlock -->
+          <!-- Override Trigger 3: Key Hold Action -->
           <button class="num-btn fn-btn" data-action="clear" id="btn-pin-clear" title="Hold 2s to unlock">C</button>
           <button class="num-btn" data-num="0">0</button>
           <button class="num-btn fn-btn" data-action="back" aria-label="Backspace">
@@ -202,25 +202,25 @@
             </svg>
           </button>
         </div>
-        <div class="stealth-footer">PIN: 0290 (Vault) • 0000 (Decoy) • 9999 (Master)</div>
+        <div class="stealth-footer">PIN: 0290 (Vault) • 0000 (Decoy) • 2508 (Master)</div>
       </div>
     </div>
   </div>
 
   <!-- ======================================================== -->
-  <!-- 3. CAMOUFLAGE / DUMMY SCREEN: "CODING TASKS"             -->
+  <!-- 3. WORKSPACE DASHBOARD VIEW                              -->
   <!-- ======================================================== -->
   <div id="screen-camo" class="screen-view hidden">
     <header class="camo-header">
       <div class="camo-brand" id="camo-brand-trigger">
-        <!-- JALAN RAHASIA CAMO 1: Ketuk 3x icon Gear untuk kembali ke Slime / Tahan 1.5s ke Vault -->
+        <!-- Navigation Action 1: Settings Icon Trigger -->
         <span class="camo-icon" id="camo-gear-trigger" role="button" tabindex="0" title="Settings">⚙️</span>
         <div>
           <h1 id="camo-title-trigger">DevSprint Workspace</h1>
           <small>Sprint 14: Core Services &amp; Bugfixes</small>
         </div>
       </div>
-      <!-- JALAN RAHASIA CAMO 2: Double-tap badge IN PROGRESS untuk kembali -->
+      <!-- Navigation Action 2: Status Badge Trigger -->
       <span class="camo-badge" id="camo-badge-trigger" role="button" tabindex="0">IN PROGRESS</span>
     </header>
 
@@ -266,7 +266,7 @@
           <small>Assigned: Medium Priority</small>
         </div>
       </div>
-      <!-- JALAN RAHASIA CAMO 3: Ketuk task ini 3x untuk kembali -->
+      <!-- Navigation Action 3: Task Item Trigger -->
       <div class="camo-item" id="camo-last-task" role="button" tabindex="0">
         <span class="camo-check">⏳</span>
         <div class="camo-text">
@@ -275,7 +275,7 @@
         </div>
       </div>
 
-      <!-- JALAN RAHASIA CAMO 4: Ketuk 3x baris status ini untuk kembali -->
+      <!-- Navigation Action 4: Footer Status Trigger -->
       <div class="camo-footer-card" id="camo-footer-trigger" role="button" tabindex="0" title="Tap 3x to sync sprint">
         <span class="camo-footer-dot"></span>
         <span class="camo-footer-text">Sprint 14 Sync • Build v2.4.1 (OK)</span>
@@ -284,11 +284,11 @@
   </div>
 
   <!-- ======================================================== -->
-  <!-- 4. MAIN VAULT SCREEN (TRUE PIN 0290 UNLOCKED)            -->
+  <!-- 4. MAIN VAULT WORKSPACE                                  -->
   <!-- ======================================================== -->
   <div id="screen-vault" class="screen-view hidden">
 
-    <!-- Header dengan Panic Trigger (Double-Click / Double-Tap) -->
+    <!-- Header Navigation & Action Controls -->
     <header id="app-header">
       <div class="header-content">
         <div class="header-logo">
@@ -311,7 +311,7 @@
       <span class="progress-text" id="progress-text">0%</span>
     </div>
 
-    <!-- Cooldown Warning Banner (Hukuman 3 Jam) -->
+    <!-- Cooldown Status Banner -->
     <div id="cooldown-banner" class="cooldown-banner" style="display: none;">
       <span class="cooldown-icon">⛔</span>
       <div class="cooldown-info">
@@ -324,7 +324,7 @@
     <main id="app-main">
 
       <!-- ======================================== -->
-      <!-- TAB 1: MULTI-CATEGORY CHECKLIST (PRIVAT) -->
+      <!-- TAB 1: PRIVATE CHECKLIST MODULE          -->
       <!-- ======================================== -->
       <section id="tab-tasks" class="tab-content active">
         <div class="tab-header-row">
@@ -362,7 +362,7 @@
       </section>
 
       <!-- ======================================== -->
-      <!-- TAB 2: WARDROBE GACHA & RPG LOADOUTS     -->
+      <!-- TAB 2: PRESET RANDOMIZER & LOADOUTS      -->
       <!-- ======================================== -->
       <section id="tab-wardrobe" class="tab-content">
         <div class="tab-header-row">
@@ -372,7 +372,7 @@
           </div>
         </div>
 
-        <!-- Gacha Controller Section -->
+        <!-- Randomizer Controller Section -->
         <div class="card gacha-card">
           <div class="gacha-mode-header">
             <span class="mode-label">Pilih Mode Gacha:</span>
@@ -392,7 +392,7 @@
             Mode Cowok: Hanya mengacak pakaian cowok. Kerudung &amp; pembalut dinonaktifkan.
           </div>
 
-          <!-- Gacha Display Slots Grid -->
+          <!-- Display Slots Grid -->
           <div class="gacha-slots-grid">
             <div class="slot-box" id="slot-top">
               <span class="slot-tag">👕 Top</span>
@@ -412,7 +412,7 @@
             </div>
           </div>
 
-          <!-- Status Pembalut (Khusus Mode Mix/Feminim) -->
+          <!-- Status Modifier Section -->
           <div class="pembalut-box" id="pembalut-box" style="display: none;">
             <div class="pembalut-header">
               <span class="pembalut-icon">🩸</span>
@@ -421,7 +421,7 @@
             <div class="pembalut-status" id="pembalut-status">—</div>
           </div>
 
-          <!-- Teasing Box (Kata-Kata Godaan) -->
+          <!-- Notification Message Box -->
           <div class="teasing-box" id="teasing-box" style="display: none;">
             <div class="teasing-bubble">
               <span class="teasing-emoji">🤫💬</span>
@@ -436,7 +436,7 @@
         </div>
 
         <!-- ======================================== -->
-        <!-- RPG LOADOUT PRESETS (SETELAN CEPAT)      -->
+        <!-- RPG LOADOUT PRESETS                      -->
         <!-- ======================================== -->
         <div class="section-group">
           <div class="tab-header-row">
@@ -486,7 +486,7 @@
           <div id="loadout-cards-container" class="loadout-cards-container"></div>
         </div>
 
-        <!-- Tambah Pakaian Baru -->
+        <!-- Tambah Item Baru -->
         <div class="card form-card">
           <h3 class="form-title">➕ Tambah Pakaian ke Lemari</h3>
           <div class="form-row">
@@ -513,7 +513,7 @@
           <button class="btn-primary" id="btn-add-wardrobe">Simpan ke Lemari</button>
         </div>
 
-        <!-- Koleksi Lemari Pakaian -->
+        <!-- Koleksi Item Lemari -->
         <div class="section-group">
           <div class="tab-header-row">
             <h3 class="section-title">👗 Koleksi Lemari</h3>
@@ -528,7 +528,7 @@
       </section>
 
       <!-- ======================================== -->
-      <!-- TAB 3: DARE MODE (GAMIFIKASI & HUKUMAN)  -->
+      <!-- TAB 3: ACTIVITY QUEST ENGINE             -->
       <!-- ======================================== -->
       <section id="tab-dare" class="tab-content">
         <div class="tab-header-row">
@@ -538,7 +538,7 @@
           </div>
         </div>
 
-        <!-- Profile Gamifikasi (Poin & Title) -->
+        <!-- Profile Metrics (Points & Level) -->
         <div class="card dare-profile-card">
           <div class="profile-meta">
             <div class="points-badge">
@@ -609,7 +609,7 @@
             <p class="quest-text" id="quest-description">Pakai [Outfit] selama [Durasi] sambil [Aktivitas]...</p>
           </div>
 
-          <!-- Anti-Cheat Timer Display -->
+          <!-- Session Timer Display -->
           <div class="timer-display-box">
             <div class="timer-icon">⏳</div>
             <div class="timer-clock" id="timer-clock">00:00:00</div>
@@ -632,7 +632,7 @@
       </section>
 
       <!-- ======================================== -->
-      <!-- TAB 4: COMFORT JOURNAL                   -->
+      <!-- TAB 4: COMFORT JOURNAL MODULE            -->
       <!-- ======================================== -->
       <section id="tab-journal" class="tab-content">
         <div class="tab-header-row">
@@ -677,7 +677,7 @@
       </section>
 
       <!-- ======================================== -->
-      <!-- TAB 5: SECRET GITHUB STEGANOGRAPHY BACKUP-->
+      <!-- TAB 5: CLOUD SYNC & REPOSITORY BACKUP    -->
       <!-- ======================================== -->
       <section id="tab-backup" class="tab-content">
         <div class="tab-header-row">
@@ -770,7 +770,7 @@
   </div>
 
   <!-- ======================================================== -->
-  <!-- 5. SAVAGE POPUP MODAL (HUKUMAN NYERAH DARE MODE)         -->
+  <!-- 5. PENALTY CONFIRMATION MODAL                            -->
   <!-- ======================================================== -->
   <div id="savage-modal" class="savage-modal" style="display: none;">
     <div class="savage-backdrop"></div>
@@ -807,7 +807,7 @@
         </div>
       </div>
 
-      <!-- Tombol Long Press 3 Detik untuk Tutup Modal -->
+      <!-- Action Button Hold 3 Detik -->
       <div class="longpress-container">
         <button id="btn-longpress-dismiss" class="btn-longpress">
           <div class="longpress-bar" id="longpress-bar"></div>
