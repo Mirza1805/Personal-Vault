@@ -21,7 +21,22 @@ const STORAGE_KEYS = {
   journal: 'vault_journal',           // Review & log entries
   gamification: 'vault_gamification', // Activity points, level, and timer status
   shuffleBags: 'vault_shuffle_bags',  // State management for randomized queues
-  githubConfig: 'vault_gh_config'     // Cloud repository configuration
+  githubConfig: 'vault_gh_config',    // Cloud repository configuration
+  activeQuest: 'vault_active_quest',  // Active quest configuration
+  lastSyncedAt: 'vault_last_synced_at'// Cloud sync timestamp
+};
+
+// Global flags and state
+let isDecoyMode = false;
+let vaultInactivityTimeout = null;
+const VAULT_INACTIVITY_LIMIT = 60000; // 60 seconds
+let currentNormalCategoryFilter = 'all';
+
+const DEFAULT_ACTIVE_QUEST = {
+  title: 'Selesaikan tugas prioritas dan perbarui catatan berkala',
+  linkedPreset: '',
+  dueDate: '',
+  status: 'Pending'
 };
 
 // Title / Gelar User
@@ -437,6 +452,127 @@ function switchScreen(screenId) {
   if (screenId !== 'vault') {
     document.body.classList.remove('feminine-theme');
   }
+
+  // Pengaturan auto-lock dan inactivity timer
+  if (screenId === 'vault') {
+    resetVaultInactivityTimer();
+  } else {
+    clearVaultInactivityTimer();
+    if (screenId !== 'camo') {
+      isDecoyMode = false;
+    }
+  }
+}
+
+/**
+ * Mengunci Vault kembali ke tampilan publik (Workspace Normal)
+ */
+function lockVaultToNormal(reason = '') {
+  const vaultScreen = document.getElementById('screen-vault');
+  if (vaultScreen && !vaultScreen.classList.contains('hidden')) {
+    vibrate(15);
+    clearVaultInactivityTimer();
+    isDecoyMode = false;
+    switchScreen('normal');
+    if (reason) {
+      showToast(reason);
+    } else {
+      showToast('Vault terkunci kembali 🔒');
+    }
+  }
+}
+
+/**
+ * Inactivity Timer: Otomatis mengunci Vault jika tidak ada interaksi selama 60 detik
+ */
+function resetVaultInactivityTimer() {
+  clearVaultInactivityTimer();
+  const vaultScreen = document.getElementById('screen-vault');
+  if (vaultScreen && !vaultScreen.classList.contains('hidden')) {
+    vaultInactivityTimeout = setTimeout(() => {
+      lockVaultToNormal('🔒 Vault dikunci otomatis karena tidak ada aktivitas (60 detik)');
+    }, VAULT_INACTIVITY_LIMIT);
+  }
+}
+
+function clearVaultInactivityTimer() {
+  if (vaultInactivityTimeout) {
+    clearTimeout(vaultInactivityTimeout);
+    vaultInactivityTimeout = null;
+  }
+}
+
+// Listener untuk reset timer saat ada aktivitas input
+['pointerdown', 'keydown', 'touchstart', 'scroll'].forEach((evt) => {
+  window.addEventListener(evt, resetVaultInactivityTimer, { passive: true });
+});
+
+// Auto-Lock saat tab berganti atau aplikasi di latar belakang
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) {
+    lockVaultToNormal('🔒 Vault dikunci otomatis (Latar Belakang)');
+  }
+});
+
+/**
+ * Quick-Lock Gesture Recognition (Triple-Tap & Swipe Down)
+ */
+let tapTimestamps = [];
+let swipeStartY = 0;
+let swipeStartTime = 0;
+let swipeInitialScrollY = 0;
+
+function setupQuickLockGestures() {
+  const vaultScreen = document.getElementById('screen-vault');
+  if (!vaultScreen) return;
+
+  // 1. Triple-Tap pada area latar non-interaktif dalam 500ms
+  vaultScreen.addEventListener('click', (e) => {
+    if (vaultScreen.classList.contains('hidden')) return;
+
+    // Abaikan jika klik berada pada tombol, input, card, atau elemen interaktif
+    const interactive = e.target.closest('button, input, select, textarea, a, .item-row, .card, .collapse-card, [role="button"], label, .custom-toggle, .star, .nav-btn, .btn-action');
+    if (interactive) {
+      tapTimestamps = [];
+      return;
+    }
+
+    const now = Date.now();
+    tapTimestamps.push(now);
+    tapTimestamps = tapTimestamps.filter((t) => now - t <= 500);
+
+    if (tapTimestamps.length >= 3) {
+      tapTimestamps = [];
+      lockVaultToNormal('🔒 Quick-Lock: Triple-tap terdeteksi');
+    }
+  });
+
+  // 2. Fast downward swipe (deltaY > 90px dalam 250ms saat posisi scroll di paling atas)
+  vaultScreen.addEventListener('touchstart', (e) => {
+    if (vaultScreen.classList.contains('hidden')) return;
+    if (e.touches && e.touches.length === 1) {
+      swipeStartY = e.touches[0].clientY;
+      swipeStartTime = Date.now();
+      const scrollEl = document.getElementById('app-main');
+      const mainScroll = scrollEl ? scrollEl.scrollTop : 0;
+      swipeInitialScrollY = (window.scrollY || 0) + mainScroll;
+    }
+  }, { passive: true });
+
+  vaultScreen.addEventListener('touchend', (e) => {
+    if (vaultScreen.classList.contains('hidden')) return;
+    if (e.changedTouches && e.changedTouches.length === 1) {
+      const deltaY = e.changedTouches[0].clientY - swipeStartY;
+      const duration = Date.now() - swipeStartTime;
+      const scrollEl = document.getElementById('app-main');
+      const mainScroll = scrollEl ? scrollEl.scrollTop : 0;
+      const currentScroll = (window.scrollY || 0) + mainScroll;
+
+      if (swipeInitialScrollY === 0 && currentScroll === 0 && deltaY > 90 && duration <= 250) {
+        lockVaultToNormal('🔒 Quick-Lock: Swipe down terdeteksi');
+      }
+    }
+  }, { passive: true });
 }
 
 function setupOuterNavigation() {
@@ -710,6 +846,7 @@ function triggerMasterUnlock(sourceLabel = 'Secret Override') {
   pinInput = '';
   updatePinDots();
   clearPinError();
+  isDecoyMode = false;
 
   const settings = loadSecure(STORAGE_KEYS.settings, {});
   settings.lockdown = false;
@@ -720,6 +857,7 @@ function triggerMasterUnlock(sourceLabel = 'Secret Override') {
   initVaultApp();
   vibrate([40, 30, 80]);
   showToast(`🔓 ${sourceLabel}: Vault Terbuka!`, 2500);
+  triggerAutoSyncOnUnlock();
 }
 
 function updatePinDots() {
@@ -743,9 +881,10 @@ function showPinError(msg) {
  * Logika Verifikasi PIN (True PIN, Decoy PIN, Master Override, & Lockout)
  */
 function verifyPinInput() {
-  // 1. Master Override Code: 2508 atau 9999 -> Langsung hapus lockdown & buka Vault
-  if (pinInput === '2508' || pinInput === '9999') {
-    triggerMasterUnlock(`Master PIN ${pinInput}`);
+  // 1. Master Override Code: 2508 -> Langsung hapus lockdown & buka Vault
+  if (pinInput === '2508') {
+    isDecoyMode = false;
+    triggerMasterUnlock('Master PIN 2508');
     return;
   }
 
@@ -755,6 +894,7 @@ function verifyPinInput() {
     failedPinAttempts = 0;
     pinInput = '';
     updatePinDots();
+    isDecoyMode = false;
 
     const settings = loadSecure(STORAGE_KEYS.settings, {});
     settings.lockdown = false;
@@ -765,15 +905,18 @@ function verifyPinInput() {
     switchScreen('vault');
     initVaultApp();
     showToast('✨ Personal Vault Terbuka');
+    triggerAutoSyncOnUnlock();
     return;
   }
 
-  // 3. Secondary Access Code: 0000 -> Buka Halaman "Coding Tasks"
+  // 3. Secondary Access Code: 0000 -> Buka Halaman "Coding Tasks" (Decoy Camouflage)
   if (pinInput === DECOY_PIN) {
     vibrate(20);
     pinInput = '';
     updatePinDots();
+    isDecoyMode = true;
     switchScreen('camo');
+    renderCamoTasks();
     showToast('Workspace: Coding Tasks Terbuka');
     return;
   }
@@ -1085,9 +1228,7 @@ function setupPanicButton() {
   });
 
   lockManualBtn?.addEventListener('click', () => {
-    vibrate(15);
-    switchScreen('normal');
-    showToast('Vault terkunci kembali 🔐');
+    lockVaultToNormal('Vault terkunci kembali 🔒');
   });
 }
 
@@ -1370,6 +1511,7 @@ function setupLoadoutForm() {
     box.classList.remove('show');
     vibrate(15);
     renderLoadoutCards();
+    triggerDebouncedAutoSync();
     showToast(`Setelan "${name}" berhasil disimpan ✓`);
   });
 }
@@ -1465,6 +1607,7 @@ function deleteLoadoutPreset(id) {
   saveSecure(STORAGE_KEYS.loadouts, loadouts);
   vibrate(10);
   renderLoadoutCards();
+  triggerDebouncedAutoSync();
   showToast('Setelan dihapus');
 }
 
@@ -1491,6 +1634,7 @@ function setupWardrobeAddForm() {
     vibrate(15);
     renderWardrobeInventory();
     populateLoadoutDropdowns();
+    triggerDebouncedAutoSync();
     showToast('Pakaian disimpan ke lemari ✓');
   });
 
@@ -1564,6 +1708,7 @@ function deleteWardrobeItem(id) {
   vibrate(10);
   renderWardrobeInventory();
   populateLoadoutDropdowns();
+  triggerDebouncedAutoSync();
   showToast('Item pakaian dihapus');
 }
 
@@ -2061,6 +2206,23 @@ const STEALTH_FILE_PATH = 'config/build-cache-lock.json';
 
 function initGitHubBackup() {
   loadGitHubConfigUI();
+  updateSyncIndicatorUI();
+}
+
+function updateSyncIndicatorUI() {
+  const config = loadSecure(STORAGE_KEYS.githubConfig, {});
+  if (!config.token || !config.owner || !config.repo || config.autoSync === false) {
+    setSyncIndicator('idle', 'Cloud Sync: Siap');
+  } else {
+    setSyncIndicator('idle', 'Cloud Sync: Terhubung');
+  }
+}
+
+function setSyncIndicator(status = 'idle', title = '') {
+  const dot = document.getElementById('vault-sync-indicator');
+  if (!dot) return;
+  dot.className = `sync-dot ${status}`;
+  dot.title = title || `Cloud Sync: ${status}`;
 }
 
 function loadGitHubConfigUI() {
@@ -2068,18 +2230,24 @@ function loadGitHubConfigUI() {
   const tokenInput = document.getElementById('gh-token');
   const ownerInput = document.getElementById('gh-username');
   const repoInput = document.getElementById('gh-repo');
+  const autoSyncCheckbox = document.getElementById('gh-autosync');
 
   if (config.token && tokenInput) tokenInput.value = config.token;
   if (config.owner && ownerInput) ownerInput.value = config.owner;
   if (config.repo && repoInput) repoInput.value = config.repo;
+  if (autoSyncCheckbox) {
+    autoSyncCheckbox.checked = config.autoSync !== false;
+  }
 }
 
 function saveGitHubConfigFromUI() {
   const token = document.getElementById('gh-token')?.value.trim();
   const owner = document.getElementById('gh-username')?.value.trim();
   const repo = document.getElementById('gh-repo')?.value.trim();
+  const autoSyncCheckbox = document.getElementById('gh-autosync');
+  const autoSync = autoSyncCheckbox ? autoSyncCheckbox.checked : true;
 
-  const config = { token, owner, repo };
+  const config = { token, owner, repo, autoSync };
   saveSecure(STORAGE_KEYS.githubConfig, config);
   return config;
 }
@@ -2087,6 +2255,17 @@ function saveGitHubConfigFromUI() {
 function setupGitHubBackupButtons() {
   document.getElementById('btn-backup-github')?.addEventListener('click', executeGitHubStealthBackup);
   document.getElementById('btn-restore-github')?.addEventListener('click', executeGitHubStealthRestore);
+
+  document.getElementById('gh-autosync')?.addEventListener('change', () => {
+    saveGitHubConfigFromUI();
+    showToast('Pengaturan Auto-Sync diperbarui.');
+  });
+
+  ['gh-token', 'gh-username', 'gh-repo'].forEach((id) => {
+    document.getElementById(id)?.addEventListener('change', () => {
+      saveGitHubConfigFromUI();
+    });
+  });
 }
 
 function setBackupLog(title, logMsg, status = 'normal') {
@@ -2107,6 +2286,11 @@ function setBackupLog(title, logMsg, status = 'normal') {
  * Eksekusi Cloud Backup via GitHub API
  */
 async function executeGitHubStealthBackup() {
+  if (isDecoyMode) {
+    showToast('Aksi dinonaktifkan dalam mode ini.');
+    return;
+  }
+
   const config = saveGitHubConfigFromUI();
   if (!config.token || !config.owner || !config.repo) {
     showToast('⚠️ Lengkapi Token, Username, & Nama Repo GitHub!');
@@ -2117,8 +2301,10 @@ async function executeGitHubStealthBackup() {
 
   setBackupLog('Status: Mengumpulkan Data...', 'Mengumpulkan seluruh database Personal Vault...');
   vibrate(15);
+  setSyncIndicator('syncing', 'Cloud Sync: Mengunggah backup manual...');
 
   try {
+    const now = Date.now();
     const vaultBundle = {
       tasks: loadSecure(STORAGE_KEYS.tasks, DEFAULT_TASKS),
       normalTasks: loadSecure(STORAGE_KEYS.normalTasks, DEFAULT_NORMAL_TASKS),
@@ -2130,13 +2316,14 @@ async function executeGitHubStealthBackup() {
       lastDate: loadSecure(STORAGE_KEYS.lastDate, null),
       normalLastDate: loadSecure(STORAGE_KEYS.normalLastDate, null),
       settings: loadSecure(STORAGE_KEYS.settings, {}),
-      backupTimestamp: Date.now()
+      activeQuestData: loadSecure(STORAGE_KEYS.activeQuest, null),
+      backupTimestamp: now
     };
 
     const stealthPayload = {
       buildTarget: "production-release",
       version: "3.4.1",
-      timestamp: Date.now(),
+      timestamp: now,
       cacheSignature: "sha256-" + uid() + uid(),
       systemMeta: {
         runtime: "vcs-daemon",
@@ -2170,7 +2357,8 @@ async function executeGitHubStealthBackup() {
 
     const putBody = {
       message: "chore(config): update build-cache-lock manifest & integrity hash",
-      content: fileContentBase64
+      content: fileContentBase64,
+      branch: "main"
     };
     if (existingSha) putBody.sha = existingSha;
 
@@ -2189,12 +2377,19 @@ async function executeGitHubStealthBackup() {
       throw new Error(errJson.message || `HTTP ${putRes.status}`);
     }
 
+    saveSecure(STORAGE_KEYS.lastSyncedAt, now);
+    setSyncIndicator('synced', 'Cloud Sync: Backup Sukses');
     vibrate([30, 20, 40]);
     setBackupLog('Status: Backup Berhasil!', `Data sukses disuntikkan ke ${config.owner}/${config.repo}/${STEALTH_FILE_PATH}`, 'success');
     showToast('🚀 Backup Siluman ke GitHub Berhasil! ✓');
 
+    setTimeout(() => {
+      setSyncIndicator('idle', 'Cloud Sync: Siap');
+    }, 4000);
+
   } catch (err) {
     console.error('GitHub Backup Error:', err);
+    setSyncIndicator('error', 'Cloud Sync: Backup Gagal');
     setBackupLog('Status: Backup Gagal', `Error: ${err.message}`, 'error');
     showToast(`❌ Gagal Backup: ${err.message}`);
     vibrate([40, 40, 40]);
@@ -2205,6 +2400,11 @@ async function executeGitHubStealthBackup() {
  * Eksekusi Cloud Restore via GitHub API
  */
 async function executeGitHubStealthRestore() {
+  if (isDecoyMode) {
+    showToast('Aksi dinonaktifkan dalam mode ini.');
+    return;
+  }
+
   const config = saveGitHubConfigFromUI();
   if (!config.token || !config.owner || !config.repo) {
     showToast('⚠️ Lengkapi Token, Username, & Nama Repo GitHub!');
@@ -2215,6 +2415,7 @@ async function executeGitHubStealthRestore() {
 
   setBackupLog('Status: Mengambil Data dari GitHub...', `Membaca file ${STEALTH_FILE_PATH} dari ${config.owner}/${config.repo}`);
   vibrate(15);
+  setSyncIndicator('syncing', 'Cloud Sync: Mengunduh data...');
 
   try {
     const apiUrl = `https://api.github.com/repos/${encodeURIComponent(config.owner)}/${encodeURIComponent(config.repo)}/contents/${STEALTH_FILE_PATH}`;
@@ -2252,7 +2453,13 @@ async function executeGitHubStealthRestore() {
     if (vaultBundle.lastDate) saveSecure(STORAGE_KEYS.lastDate, vaultBundle.lastDate);
     if (vaultBundle.normalLastDate) saveSecure(STORAGE_KEYS.normalLastDate, vaultBundle.normalLastDate);
     if (vaultBundle.settings) saveSecure(STORAGE_KEYS.settings, vaultBundle.settings);
+    if (vaultBundle.activeQuestData) {
+      saveSecure(STORAGE_KEYS.activeQuest, vaultBundle.activeQuestData);
+      renderActiveQuestCard();
+    }
 
+    saveSecure(STORAGE_KEYS.lastSyncedAt, vaultBundle.backupTimestamp || Date.now());
+    setSyncIndicator('synced', 'Cloud Sync: Restore Sukses');
     vibrate([40, 30, 50]);
     setBackupLog('Status: Restore Sukses!', `Semua data berhasil dipulihkan dari GitHub (${new Date(vaultBundle.backupTimestamp || Date.now()).toLocaleString()})`, 'success');
     showToast('📥 Data Berhasil Di-Restore dari GitHub! ✓');
@@ -2267,12 +2474,357 @@ async function executeGitHubStealthRestore() {
     renderJournal();
     updateGamificationProfileUI();
 
+    setTimeout(() => {
+      setSyncIndicator('idle', 'Cloud Sync: Siap');
+    }, 4000);
+
   } catch (err) {
     console.error('GitHub Restore Error:', err);
+    setSyncIndicator('error', 'Cloud Sync: Restore Gagal');
     setBackupLog('Status: Restore Gagal', `Error: ${err.message}`, 'error');
     showToast(`❌ Gagal Restore: ${err.message}`);
     vibrate([40, 40, 40]);
   }
+}
+
+/**
+ * Debounced Silent Auto-Sync: Mengunggah mutasi lokal ke GitHub setelah 3 detik
+ */
+let autoSyncDebounceTimer = null;
+
+function triggerDebouncedAutoSync() {
+  if (isDecoyMode) return;
+  const config = loadSecure(STORAGE_KEYS.githubConfig, {});
+  if (!config.token || !config.owner || !config.repo || config.autoSync === false) return;
+
+  if (autoSyncDebounceTimer) clearTimeout(autoSyncDebounceTimer);
+  setSyncIndicator('idle', 'Cloud Sync: Perubahan tersimpan lokal...');
+
+  autoSyncDebounceTimer = setTimeout(() => {
+    silentPushToGitHub();
+  }, 3000);
+}
+
+/**
+ * Push data ke GitHub secara silent di background dengan penanganan konflik HTTP 409
+ */
+async function silentPushToGitHub(retryCount = 0) {
+  if (isDecoyMode) return;
+  const config = loadSecure(STORAGE_KEYS.githubConfig, {});
+  if (!config.token || !config.owner || !config.repo || config.autoSync === false) return;
+
+  setSyncIndicator('syncing', 'Cloud Sync: Sinkronisasi latar belakang...');
+
+  try {
+    const now = Date.now();
+    const vaultBundle = {
+      tasks: loadSecure(STORAGE_KEYS.tasks, DEFAULT_TASKS),
+      normalTasks: loadSecure(STORAGE_KEYS.normalTasks, DEFAULT_NORMAL_TASKS),
+      wardrobe: loadSecure(STORAGE_KEYS.wardrobe, DEFAULT_WARDROBE),
+      loadouts: loadSecure(STORAGE_KEYS.loadouts, DEFAULT_LOADOUTS),
+      journal: loadSecure(STORAGE_KEYS.journal, DEFAULT_JOURNAL),
+      gamification: loadSecure(STORAGE_KEYS.gamification, DEFAULT_GAMIFICATION),
+      shuffleBags: loadSecure(STORAGE_KEYS.shuffleBags, {}),
+      lastDate: loadSecure(STORAGE_KEYS.lastDate, null),
+      normalLastDate: loadSecure(STORAGE_KEYS.normalLastDate, null),
+      settings: loadSecure(STORAGE_KEYS.settings, {}),
+      activeQuestData: loadSecure(STORAGE_KEYS.activeQuest, null),
+      backupTimestamp: now
+    };
+
+    const stealthPayload = {
+      buildTarget: "production-release",
+      version: "3.4.1",
+      timestamp: now,
+      cacheSignature: "sha256-" + uid() + uid(),
+      systemMeta: {
+        runtime: "vcs-daemon",
+        environment: "lts-stable"
+      },
+      _buildCacheLockData: btoa(unescape(encodeURIComponent(JSON.stringify(vaultBundle))))
+    };
+
+    const fileContentUtf8 = JSON.stringify(stealthPayload, null, 2);
+    const fileContentBase64 = btoa(unescape(encodeURIComponent(fileContentUtf8)));
+    const apiUrl = `https://api.github.com/repos/${encodeURIComponent(config.owner)}/${encodeURIComponent(config.repo)}/contents/${STEALTH_FILE_PATH}`;
+
+    let currentSha = null;
+    try {
+      const getRes = await fetch(apiUrl, {
+        headers: {
+          'Authorization': `token ${config.token}`,
+          'Accept': 'application/vnd.github.v3+json'
+        }
+      });
+      if (getRes.ok) {
+        const existingFile = await getRes.json();
+        currentSha = existingFile.sha;
+      }
+    } catch (e) { }
+
+    const putBody = {
+      message: "chore(config): update build-cache-lock manifest & integrity hash",
+      content: fileContentBase64,
+      branch: "main"
+    };
+    if (currentSha) putBody.sha = currentSha;
+
+    const putRes = await fetch(apiUrl, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `token ${config.token}`,
+        'Content-Type': 'application/json',
+        'Accept': 'application/vnd.github.v3+json'
+      },
+      body: JSON.stringify(putBody)
+    });
+
+    if (!putRes.ok) {
+      if (putRes.status === 409 && retryCount < 1) {
+        console.warn('Auto-sync SHA conflict (409), retrying once...');
+        return silentPushToGitHub(retryCount + 1);
+      }
+      throw new Error(`HTTP ${putRes.status}`);
+    }
+
+    saveSecure(STORAGE_KEYS.lastSyncedAt, now);
+    setSyncIndicator('synced', 'Cloud Sync: Sinkron');
+    setTimeout(() => {
+      setSyncIndicator('idle', 'Cloud Sync: Siap');
+    }, 4000);
+  } catch (err) {
+    console.warn('Silent auto-sync push error:', err);
+    setSyncIndicator('error', 'Cloud Sync: Gagal mengunggah');
+  }
+}
+
+/**
+ * Memeriksa pembaruan remote saat Vault dibuka, dan menarik pembaruan jika ada versi lebih baru
+ */
+async function triggerAutoSyncOnUnlock() {
+  if (isDecoyMode) return;
+  const config = loadSecure(STORAGE_KEYS.githubConfig, {});
+  if (!config.token || !config.owner || !config.repo || config.autoSync === false) {
+    setSyncIndicator('idle', 'Cloud Sync: Nonaktif / Belum Terkonfigurasi');
+    return;
+  }
+
+  setSyncIndicator('syncing', 'Cloud Sync: Memeriksa data remote...');
+
+  try {
+    const apiUrl = `https://api.github.com/repos/${encodeURIComponent(config.owner)}/${encodeURIComponent(config.repo)}/contents/${STEALTH_FILE_PATH}`;
+    const getRes = await fetch(apiUrl, {
+      headers: {
+        'Authorization': `token ${config.token}`,
+        'Accept': 'application/vnd.github.v3+json'
+      }
+    });
+
+    if (!getRes.ok) {
+      if (getRes.status === 404) {
+        setSyncIndicator('idle', 'Cloud Sync: Repositori belum berisi data');
+        return;
+      }
+      throw new Error(`HTTP ${getRes.status}`);
+    }
+
+    const fileMeta = await getRes.json();
+    const decodedFileContentUtf8 = decodeURIComponent(escape(atob(fileMeta.content.replace(/\s/g, ''))));
+    const stealthJson = JSON.parse(decodedFileContentUtf8);
+
+    if (stealthJson && stealthJson._buildCacheLockData) {
+      const remoteUpdatedAt = Number(stealthJson.timestamp || 0);
+      const localLastSyncedAt = Number(loadSecure(STORAGE_KEYS.lastSyncedAt, 0));
+
+      if (remoteUpdatedAt > localLastSyncedAt) {
+        const vaultBundleJson = decodeURIComponent(escape(atob(stealthJson._buildCacheLockData)));
+        const vaultBundle = JSON.parse(vaultBundleJson);
+
+        if (vaultBundle.tasks) saveSecure(STORAGE_KEYS.tasks, vaultBundle.tasks);
+        if (vaultBundle.normalTasks) saveSecure(STORAGE_KEYS.normalTasks, vaultBundle.normalTasks);
+        if (vaultBundle.wardrobe) saveSecure(STORAGE_KEYS.wardrobe, vaultBundle.wardrobe);
+        if (vaultBundle.loadouts) saveSecure(STORAGE_KEYS.loadouts, vaultBundle.loadouts);
+        if (vaultBundle.journal) saveSecure(STORAGE_KEYS.journal, vaultBundle.journal);
+        if (vaultBundle.gamification) saveSecure(STORAGE_KEYS.gamification, vaultBundle.gamification);
+        if (vaultBundle.shuffleBags) saveSecure(STORAGE_KEYS.shuffleBags, vaultBundle.shuffleBags);
+        if (vaultBundle.lastDate) saveSecure(STORAGE_KEYS.lastDate, vaultBundle.lastDate);
+        if (vaultBundle.normalLastDate) saveSecure(STORAGE_KEYS.normalLastDate, vaultBundle.normalLastDate);
+        if (vaultBundle.settings) saveSecure(STORAGE_KEYS.settings, vaultBundle.settings);
+        if (vaultBundle.activeQuestData) {
+          saveSecure(STORAGE_KEYS.activeQuest, vaultBundle.activeQuestData);
+          renderActiveQuestCard();
+        }
+
+        saveSecure(STORAGE_KEYS.lastSyncedAt, remoteUpdatedAt);
+
+        renderCategories();
+        renderWardrobeInventory();
+        populateLoadoutDropdowns();
+        renderLoadoutCards();
+        syncDareModeState();
+        renderJournal();
+        renderNormalCategories();
+        showToast('☁️ Data diperbarui dari Cloud!');
+      } else {
+        saveSecure(STORAGE_KEYS.lastSyncedAt, Math.max(localLastSyncedAt, remoteUpdatedAt));
+      }
+      setSyncIndicator('synced', 'Cloud Sync: Sinkron');
+      setTimeout(() => {
+        setSyncIndicator('idle', 'Cloud Sync: Siap');
+      }, 4000);
+    }
+  } catch (err) {
+    console.warn('Auto-sync unlock check error:', err);
+    setSyncIndicator('error', 'Cloud Sync: Gagal memeriksa remote');
+  }
+}
+
+/**
+ * Active Quest Card Controller
+ */
+function renderActiveQuestCard() {
+  const quest = loadSecure(STORAGE_KEYS.activeQuest, DEFAULT_ACTIVE_QUEST) || DEFAULT_ACTIVE_QUEST;
+  const titleEl = document.getElementById('active-quest-title');
+  const badgeEl = document.getElementById('active-quest-status-badge');
+  const presetEl = document.getElementById('active-quest-preset');
+  const deadlineEl = document.getElementById('active-quest-deadline');
+  const statusControls = document.getElementById('quest-status-controls');
+
+  if (titleEl) {
+    titleEl.textContent = quest.title || 'Tidak ada Quest aktif';
+  }
+
+  const currentStatus = quest.status || 'Pending';
+  if (badgeEl) {
+    badgeEl.textContent = currentStatus;
+    badgeEl.className = `quest-status status-${currentStatus.toLowerCase()}`;
+  }
+
+  if (presetEl) {
+    presetEl.textContent = quest.linkedPreset ? `🔗 ${quest.linkedPreset}` : '🔗 Tanpa Preset';
+  }
+
+  if (deadlineEl) {
+    if (quest.dueDate) {
+      try {
+        const d = new Date(quest.dueDate);
+        deadlineEl.textContent = `⏰ ${d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })} ${d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}`;
+      } catch (e) {
+        deadlineEl.textContent = `⏰ ${quest.dueDate}`;
+      }
+    } else {
+      deadlineEl.textContent = '⏰ Tanpa Batas Waktu';
+    }
+  }
+
+  if (statusControls) {
+    const btns = statusControls.querySelectorAll('.btn-quest-status');
+    btns.forEach((btn) => {
+      btn.classList.toggle('active', btn.dataset.status === currentStatus);
+    });
+  }
+}
+
+function setupActiveQuestEvents() {
+  const card = document.getElementById('active-quest-card');
+  const formEl = document.getElementById('active-quest-form');
+  const editBtn = document.getElementById('btn-edit-active-quest');
+  const cancelBtn = document.getElementById('btn-cancel-quest');
+  const saveBtn = document.getElementById('btn-save-quest');
+  const presetSelect = document.getElementById('select-quest-preset');
+  const titleInput = document.getElementById('input-quest-title');
+  const dueInput = document.getElementById('input-quest-due');
+  const statusSelect = document.getElementById('select-quest-status');
+
+  if (!card) return;
+
+  const populatePresetOptions = (selectedVal = '') => {
+    if (!presetSelect) return;
+    presetSelect.innerHTML = '<option value="">-- Tanpa Preset --</option>';
+
+    const loadouts = loadSecure(STORAGE_KEYS.loadouts, []);
+    if (Array.isArray(loadouts) && loadouts.length > 0) {
+      const groupLoadouts = document.createElement('optgroup');
+      groupLoadouts.label = 'Saved Loadouts';
+      loadouts.forEach((l) => {
+        const opt = document.createElement('option');
+        opt.value = `Loadout: ${l.name}`;
+        opt.textContent = `Loadout: ${l.name}`;
+        if (opt.value === selectedVal) opt.selected = true;
+        groupLoadouts.appendChild(opt);
+      });
+      presetSelect.appendChild(groupLoadouts);
+    }
+
+    if (typeof MOOD_ACTIVITIES !== 'undefined') {
+      const groupChallenges = document.createElement('optgroup');
+      groupChallenges.label = 'Challenges / Dares';
+      Object.keys(MOOD_ACTIVITIES).forEach((mood) => {
+        MOOD_ACTIVITIES[mood].forEach((act) => {
+          const opt = document.createElement('option');
+          opt.value = `[${mood.toUpperCase()}] ${act.text.substring(0, 30)}...`;
+          opt.textContent = `[${mood.toUpperCase()}] ${act.text.substring(0, 35)}...`;
+          if (opt.value === selectedVal) opt.selected = true;
+          groupChallenges.appendChild(opt);
+        });
+      });
+      presetSelect.appendChild(groupChallenges);
+    }
+  };
+
+  editBtn?.addEventListener('click', () => {
+    const isHidden = formEl.style.display === 'none';
+    if (isHidden) {
+      const quest = loadSecure(STORAGE_KEYS.activeQuest, DEFAULT_ACTIVE_QUEST) || DEFAULT_ACTIVE_QUEST;
+      if (titleInput) titleInput.value = quest.title || '';
+      if (dueInput) dueInput.value = quest.dueDate || '';
+      if (statusSelect) statusSelect.value = quest.status || 'Pending';
+      populatePresetOptions(quest.linkedPreset || '');
+      formEl.style.display = 'block';
+    } else {
+      formEl.style.display = 'none';
+    }
+  });
+
+  cancelBtn?.addEventListener('click', () => {
+    if (formEl) formEl.style.display = 'none';
+  });
+
+  saveBtn?.addEventListener('click', () => {
+    const title = titleInput ? titleInput.value.trim() : '';
+    if (!title) {
+      showToast('Judul quest tidak boleh kosong!');
+      return;
+    }
+    const quest = {
+      title,
+      linkedPreset: presetSelect ? presetSelect.value : '',
+      dueDate: dueInput ? dueInput.value : '',
+      status: statusSelect ? statusSelect.value : 'Pending'
+    };
+    saveSecure(STORAGE_KEYS.activeQuest, quest);
+    if (formEl) formEl.style.display = 'none';
+    renderActiveQuestCard();
+    triggerDebouncedAutoSync();
+    vibrate(15);
+    showToast('Active Quest disimpan!');
+  });
+
+  card.addEventListener('click', (e) => {
+    const statusBtn = e.target.closest('.btn-quest-status');
+    if (statusBtn) {
+      const newStatus = statusBtn.dataset.status;
+      const quest = loadSecure(STORAGE_KEYS.activeQuest, DEFAULT_ACTIVE_QUEST) || DEFAULT_ACTIVE_QUEST;
+      if (quest.status !== newStatus) {
+        quest.status = newStatus;
+        saveSecure(STORAGE_KEYS.activeQuest, quest);
+        renderActiveQuestCard();
+        triggerDebouncedAutoSync();
+        vibrate(20);
+        showToast(`Quest Status: ${newStatus}`);
+      }
+    }
+  });
 }
 
 // ==========================================
@@ -2352,6 +2904,7 @@ function setupJournalForm() {
 
     vibrate(16);
     renderJournal();
+    triggerDebouncedAutoSync();
     showToast('Catatan jurnal tersimpan ✓');
   });
 }
@@ -2400,6 +2953,7 @@ function deleteJournalEntry(id) {
   saveSecure(STORAGE_KEYS.journal, journal);
   vibrate(10);
   renderJournal();
+  triggerDebouncedAutoSync();
   showToast('Catatan jurnal dihapus');
 }
 
@@ -2571,6 +3125,7 @@ function submitNewSubItem(catId, inputEl, timeInputEl) {
   if (timeInputEl) timeInputEl.value = '';
   vibrate(12);
   renderCategories();
+  triggerDebouncedAutoSync();
   showToast('Tugas ditambahkan ✓');
 }
 
@@ -2585,6 +3140,7 @@ function toggleSubItem(catId, itemId) {
     vibrate(item.checked ? 18 : 10);
     saveSecure(STORAGE_KEYS.tasks, categories);
     renderCategories();
+    triggerDebouncedAutoSync();
   }
 }
 
@@ -2597,6 +3153,7 @@ function deleteSubItem(catId, itemId) {
   saveSecure(STORAGE_KEYS.tasks, categories);
   vibrate(10);
   renderCategories();
+  triggerDebouncedAutoSync();
   showToast('Tugas dihapus');
 }
 
@@ -2606,6 +3163,7 @@ function deleteCategory(catId) {
   saveSecure(STORAGE_KEYS.tasks, categories);
   vibrate(15);
   renderCategories();
+  triggerDebouncedAutoSync();
   showToast('Kategori dihapus');
 }
 
@@ -2651,6 +3209,7 @@ function setupCategoryForm() {
 
     vibrate(15);
     renderCategories();
+    triggerDebouncedAutoSync();
     showToast('Kategori baru tersimpan ✓');
   });
 }
@@ -2725,13 +3284,43 @@ function renderNormalCategories() {
   const container = document.getElementById('normal-category-list-container');
   if (!container) return;
 
-  if (categories.length === 0) {
+  // Render Filter Chips
+  const filterContainer = document.getElementById('normal-category-filter-chips');
+  if (filterContainer) {
+    const totalAllTasks = categories.reduce((acc, c) => acc + (c.items ? c.items.length : 0), 0);
+    let chipsHtml = `
+      <button type="button" class="filter-chip ${currentNormalCategoryFilter === 'all' ? 'active' : ''}" data-filter="all">
+        Semua <span class="filter-chip-count">(${totalAllTasks})</span>
+      </button>
+    `;
+
+    categories.forEach((c) => {
+      const cTotal = c.items ? c.items.length : 0;
+      const cDone = c.items ? c.items.filter((i) => i.checked).length : 0;
+      chipsHtml += `
+        <div class="filter-chip ${currentNormalCategoryFilter === c.id ? 'active' : ''}" data-filter="${c.id}">
+          <span class="filter-chip-name">${escapeHtml(c.name)}</span>
+          <span class="filter-chip-count">(${cDone}/${cTotal})</span>
+          <button type="button" class="filter-chip-edit-btn" data-cat-id="${c.id}" title="Ubah Nama Kategori">✎</button>
+        </div>
+      `;
+    });
+    filterContainer.innerHTML = chipsHtml;
+  }
+
+  // Filter Categories
+  const displayedCategories = currentNormalCategoryFilter === 'all'
+    ? categories
+    : categories.filter((c) => c.id === currentNormalCategoryFilter);
+
+  if (displayedCategories.length === 0) {
     container.innerHTML = '<div class="empty-state">Belum ada kategori checklist publik. Klik "+ Kategori".</div>';
     updateNormalProgress();
+    setupNormalCategoryEventListeners();
     return;
   }
 
-  container.innerHTML = categories.map((cat) => {
+  container.innerHTML = displayedCategories.map((cat) => {
     const totalItems = cat.items ? cat.items.length : 0;
     const doneItems = cat.items ? cat.items.filter((i) => i.checked).length : 0;
     const isDailyCat = cat.isDaily || cat.name.toLowerCase() === 'daily' || cat.name.toLowerCase().includes('harian');
@@ -2743,7 +3332,8 @@ function renderNormalCategories() {
             <div class="item-checkbox"></div>
             <span class="item-text">${escapeHtml(item.text)}</span>
             ${item.time ? `<span class="item-time-badge">⏰ ${escapeHtml(item.time)}</span>` : ''}
-            <button class="item-del-btn item-normal-del-btn" data-cat-id="${cat.id}" data-item-id="${item.id}" title="Hapus Tugas">✕</button>
+            <button type="button" class="item-edit-btn item-normal-edit-btn" data-cat-id="${cat.id}" data-item-id="${item.id}" title="Edit Tugas">✎</button>
+            <button type="button" class="item-del-btn item-normal-del-btn" data-cat-id="${cat.id}" data-item-id="${item.id}" title="Hapus Tugas">✕</button>
           </div>
         `).join('');
 
@@ -2752,10 +3342,11 @@ function renderNormalCategories() {
         <div class="category-header">
           <div class="category-title-group">
             <span class="category-title">${escapeHtml(cat.name)}</span>
+            <button type="button" class="btn-edit-cat btn-edit-normal-cat" data-cat-id="${cat.id}" title="Ubah Nama Kategori">✎</button>
             ${isDailyCat ? '<span class="daily-badge">DAILY</span>' : ''}
             <span class="category-count">(${doneItems}/${totalItems})</span>
           </div>
-          <button class="btn-del-cat btn-del-normal-cat" data-cat-id="${cat.id}" title="Hapus Kategori">🗑️</button>
+          <button type="button" class="btn-del-cat btn-del-normal-cat" data-cat-id="${cat.id}" title="Hapus Kategori">🗑️</button>
         </div>
 
         <div class="category-items">
@@ -2765,7 +3356,7 @@ function renderNormalCategories() {
         <div class="category-add-row">
           <input type="text" class="input-field input-normal-add-subitem" data-cat-id="${cat.id}" placeholder="+ Tambah tugas ke ${escapeHtml(cat.name)}..." maxlength="80">
           <input type="time" class="input-field input-normal-add-time" data-cat-id="${cat.id}" title="Set Jam Pengingat (Opsional)">
-          <button class="btn-add-item btn-add-normal-item" data-cat-id="${cat.id}">+</button>
+          <button type="button" class="btn-add-item btn-add-normal-item" data-cat-id="${cat.id}">+</button>
         </div>
       </div>
     `;
@@ -2777,13 +3368,47 @@ function renderNormalCategories() {
 
 function setupNormalCategoryEventListeners() {
   const container = document.getElementById('normal-category-list-container');
+  const filterContainer = document.getElementById('normal-category-filter-chips');
+
+  // Filter Chip Click Listener
+  if (filterContainer) {
+    filterContainer.onclick = (e) => {
+      const editChipBtn = e.target.closest('.filter-chip-edit-btn');
+      if (editChipBtn) {
+        e.stopPropagation();
+        openNormalCategoryEditModal(editChipBtn.dataset.catId);
+        return;
+      }
+
+      const chip = e.target.closest('.filter-chip');
+      if (chip && chip.dataset.filter) {
+        currentNormalCategoryFilter = chip.dataset.filter;
+        renderNormalCategories();
+      }
+    };
+  }
+
   if (!container) return;
 
   container.onclick = (e) => {
+    const editCatBtn = e.target.closest('.btn-edit-normal-cat');
+    if (editCatBtn) {
+      e.stopPropagation();
+      openNormalCategoryEditModal(editCatBtn.dataset.catId);
+      return;
+    }
+
     const delCatBtn = e.target.closest('.btn-del-normal-cat');
     if (delCatBtn) {
       e.stopPropagation();
       deleteNormalCategory(delCatBtn.dataset.catId);
+      return;
+    }
+
+    const editItemBtn = e.target.closest('.item-normal-edit-btn');
+    if (editItemBtn) {
+      e.stopPropagation();
+      openNormalTaskEditModal(editItemBtn.dataset.catId, editItemBtn.dataset.itemId);
       return;
     }
 
@@ -2804,7 +3429,7 @@ function setupNormalCategoryEventListeners() {
     }
 
     const row = e.target.closest('.item-row');
-    if (row && !e.target.closest('.item-del-btn')) {
+    if (row && !e.target.closest('.item-del-btn') && !e.target.closest('.item-edit-btn')) {
       toggleNormalSubItem(row.dataset.catId, row.dataset.itemId);
     }
   };
@@ -2836,13 +3461,14 @@ function submitNewNormalSubItem(catId, inputEl, timeInputEl) {
   if (!cat) return;
 
   if (!Array.isArray(cat.items)) cat.items = [];
-  cat.items.push({ id: uid(), text, checked: false, time });
+  cat.items.push({ id: uid(), text, checked: false, time, category: cat.name });
   saveSecure(STORAGE_KEYS.normalTasks, categories);
 
   inputEl.value = '';
   if (timeInputEl) timeInputEl.value = '';
   vibrate(12);
   renderNormalCategories();
+  triggerDebouncedAutoSync();
   showToast('Tugas normal ditambahkan ✓');
 }
 
@@ -2857,6 +3483,7 @@ function toggleNormalSubItem(catId, itemId) {
     vibrate(item.checked ? 18 : 10);
     saveSecure(STORAGE_KEYS.normalTasks, categories);
     renderNormalCategories();
+    triggerDebouncedAutoSync();
   }
 }
 
@@ -2869,15 +3496,18 @@ function deleteNormalSubItem(catId, itemId) {
   saveSecure(STORAGE_KEYS.normalTasks, categories);
   vibrate(10);
   renderNormalCategories();
+  triggerDebouncedAutoSync();
   showToast('Tugas dihapus');
 }
 
 function deleteNormalCategory(catId) {
   let categories = loadSecure(STORAGE_KEYS.normalTasks, DEFAULT_NORMAL_TASKS);
   categories = categories.filter((c) => c.id !== catId);
+  if (currentNormalCategoryFilter === catId) currentNormalCategoryFilter = 'all';
   saveSecure(STORAGE_KEYS.normalTasks, categories);
   vibrate(15);
   renderNormalCategories();
+  triggerDebouncedAutoSync();
   showToast('Kategori dihapus');
 }
 
@@ -2908,6 +3538,12 @@ function setupNormalCategoryForm() {
     }
 
     const categories = loadSecure(STORAGE_KEYS.normalTasks, DEFAULT_NORMAL_TASKS);
+    const isDuplicate = categories.some((c) => c.name.toLowerCase() === name.toLowerCase());
+    if (isDuplicate) {
+      showToast('Nama kategori tersebut sudah ada!');
+      return;
+    }
+
     categories.push({
       id: uid(),
       name,
@@ -2923,7 +3559,192 @@ function setupNormalCategoryForm() {
 
     vibrate(15);
     renderNormalCategories();
+    triggerDebouncedAutoSync();
     showToast('Kategori baru tersimpan ✓');
+  });
+}
+
+/**
+ * Dialog Modal: Ubah Nama Kategori Publik
+ */
+function openNormalCategoryEditModal(catId) {
+  const categories = loadSecure(STORAGE_KEYS.normalTasks, DEFAULT_NORMAL_TASKS);
+  const cat = categories.find((c) => c.id === catId);
+  if (!cat) return;
+
+  const modal = document.getElementById('modal-edit-normal-category');
+  const input = document.getElementById('modal-input-normal-cat-name');
+  const hiddenId = document.getElementById('modal-hidden-normal-cat-id');
+
+  if (modal && input && hiddenId) {
+    input.value = cat.name;
+    hiddenId.value = cat.id;
+    modal.classList.add('show');
+    input.focus();
+  }
+}
+
+function closeNormalCategoryEditModal() {
+  const modal = document.getElementById('modal-edit-normal-category');
+  if (modal) modal.classList.remove('show');
+}
+
+function saveNormalCategoryRename() {
+  const input = document.getElementById('modal-input-normal-cat-name');
+  const hiddenId = document.getElementById('modal-hidden-normal-cat-id');
+  if (!input || !hiddenId) return;
+
+  const catId = hiddenId.value;
+  const newName = input.value.trim();
+
+  if (!newName) {
+    showToast('Nama kategori tidak boleh kosong!');
+    return;
+  }
+
+  const categories = loadSecure(STORAGE_KEYS.normalTasks, DEFAULT_NORMAL_TASKS);
+  const cat = categories.find((c) => c.id === catId);
+  if (!cat) return;
+
+  const isDuplicate = categories.some((c) => c.id !== catId && c.name.toLowerCase() === newName.toLowerCase());
+  if (isDuplicate) {
+    showToast('Nama kategori tersebut sudah ada!');
+    return;
+  }
+
+  const oldName = cat.name;
+  cat.name = newName;
+
+  // Cascade-update property category pada semua item di kategori ini
+  if (Array.isArray(cat.items)) {
+    cat.items.forEach((item) => {
+      item.category = newName;
+    });
+  }
+
+  saveSecure(STORAGE_KEYS.normalTasks, categories);
+  closeNormalCategoryEditModal();
+  renderNormalCategories();
+  triggerDebouncedAutoSync();
+  vibrate(15);
+  showToast(`Kategori diubah: "${newName}"`);
+}
+
+/**
+ * Dialog Modal: Edit Tugas Publik (Teks, Kategori, & Jam Pengingat)
+ */
+function openNormalTaskEditModal(catId, itemId) {
+  const categories = loadSecure(STORAGE_KEYS.normalTasks, DEFAULT_NORMAL_TASKS);
+  const cat = categories.find((c) => c.id === catId);
+  if (!cat || !cat.items) return;
+
+  const item = cat.items.find((i) => i.id === itemId);
+  if (!item) return;
+
+  const modal = document.getElementById('modal-edit-normal-task');
+  const textInput = document.getElementById('modal-input-normal-task-text');
+  const catSelect = document.getElementById('modal-select-normal-task-category');
+  const timeInput = document.getElementById('modal-input-normal-task-time');
+  const hiddenCatId = document.getElementById('modal-hidden-normal-task-cat-id');
+  const hiddenItemId = document.getElementById('modal-hidden-normal-task-item-id');
+
+  if (modal && textInput && catSelect && timeInput && hiddenCatId && hiddenItemId) {
+    textInput.value = item.text;
+    timeInput.value = item.time || '';
+    hiddenCatId.value = cat.id;
+    hiddenItemId.value = item.id;
+
+    catSelect.innerHTML = categories.map((c) => `
+      <option value="${c.id}" ${c.id === cat.id ? 'selected' : ''}>${escapeHtml(c.name)}</option>
+    `).join('');
+
+    modal.classList.add('show');
+    textInput.focus();
+  }
+}
+
+function closeNormalTaskEditModal() {
+  const modal = document.getElementById('modal-edit-normal-task');
+  if (modal) modal.classList.remove('show');
+}
+
+function saveNormalTaskEdit() {
+  const textInput = document.getElementById('modal-input-normal-task-text');
+  const catSelect = document.getElementById('modal-select-normal-task-category');
+  const timeInput = document.getElementById('modal-input-normal-task-time');
+  const hiddenCatId = document.getElementById('modal-hidden-normal-task-cat-id');
+  const hiddenItemId = document.getElementById('modal-hidden-normal-task-item-id');
+
+  if (!textInput || !catSelect || !timeInput || !hiddenCatId || !hiddenItemId) return;
+
+  const newText = textInput.value.trim();
+  if (!newText) {
+    showToast('Nama tugas tidak boleh kosong!');
+    return;
+  }
+
+  const oldCatId = hiddenCatId.value;
+  const itemId = hiddenItemId.value;
+  const newCatId = catSelect.value;
+  const newTime = timeInput.value.trim();
+
+  const categories = loadSecure(STORAGE_KEYS.normalTasks, DEFAULT_NORMAL_TASKS);
+  const oldCat = categories.find((c) => c.id === oldCatId);
+  const newCat = categories.find((c) => c.id === newCatId);
+
+  if (!oldCat || !oldCat.items || !newCat) return;
+
+  const itemIndex = oldCat.items.findIndex((i) => i.id === itemId);
+  if (itemIndex === -1) return;
+
+  const item = oldCat.items[itemIndex];
+  const oldTime = item.time || '';
+
+  item.text = newText;
+
+  // Jika jam pengingat berubah, reset state trigger notifikasi harian
+  if (oldTime !== newTime) {
+    item.time = newTime;
+    [...notifiedReminders].forEach((key) => {
+      if (key.startsWith(`normal_${item.id}_`)) {
+        notifiedReminders.delete(key);
+      }
+    });
+  }
+
+  // Jika berpindah kategori, pindahkan item ke kategori target
+  if (oldCatId !== newCatId) {
+    oldCat.items.splice(itemIndex, 1);
+    item.category = newCat.name;
+    if (!Array.isArray(newCat.items)) newCat.items = [];
+    newCat.items.push(item);
+  } else {
+    item.category = oldCat.name;
+  }
+
+  saveSecure(STORAGE_KEYS.normalTasks, categories);
+  closeNormalTaskEditModal();
+  renderNormalCategories();
+  triggerDebouncedAutoSync();
+  vibrate(15);
+  showToast('Tugas berhasil diperbarui ✓');
+}
+
+function setupNormalModals() {
+  document.getElementById('modal-btn-cancel-normal-cat')?.addEventListener('click', closeNormalCategoryEditModal);
+  document.getElementById('modal-btn-save-normal-cat')?.addEventListener('click', saveNormalCategoryRename);
+  document.getElementById('modal-edit-normal-category')?.addEventListener('click', (e) => {
+    if (e.target.id === 'modal-edit-normal-category') closeNormalCategoryEditModal();
+  });
+
+  document.getElementById('modal-btn-cancel-normal-task')?.addEventListener('click', closeNormalTaskEditModal);
+  document.getElementById('modal-btn-save-normal-task')?.addEventListener('click', saveNormalTaskEdit);
+  document.getElementById('modal-btn-clear-normal-task-time')?.addEventListener('click', () => {
+    const timeInput = document.getElementById('modal-input-normal-task-time');
+    if (timeInput) timeInput.value = '';
+  });
+  document.getElementById('modal-edit-normal-task')?.addEventListener('click', (e) => {
+    if (e.target.id === 'modal-edit-normal-task') closeNormalTaskEditModal();
   });
 }
 
@@ -3105,6 +3926,8 @@ function initVaultApp() {
     setupStarRating();
     setupJournalForm();
     setupGitHubBackupButtons();
+    setupActiveQuestEvents();
+    setupQuickLockGestures();
   }
 
   // 2. Sinkronisasi data dan rendering UI dijalankan setiap kali Vault dibuka
@@ -3113,6 +3936,8 @@ function initVaultApp() {
   syncDareModeState();
   initJournal();
   initGitHubBackup();
+  renderActiveQuestCard();
+  updateSyncIndicatorUI();
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -3122,6 +3947,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // 1. Inisialisasi modul layar luar & navigasi publik
   initNormalTasks();
   setupOuterNavigation();
+  setupNormalModals();
   initReminderEngine();
 
   // 2. Inisialisasi modul interaktif & shortcut autentikasi

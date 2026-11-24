@@ -37,6 +37,9 @@
     </header>
 
     <main class="normal-main-content">
+      <!-- Category Filter Chips -->
+      <div id="normal-category-filter-chips" class="category-filter-chips"></div>
+
       <!-- Form Tambah Kategori Baru Normal -->
       <div id="new-normal-category-box" class="card form-card collapse-card">
         <h3 class="form-title">✨ Buat Kategori Tugas Baru</h3>
@@ -296,7 +299,8 @@
           <h1>Personal Vault</h1>
         </div>
         <div class="header-actions">
-          <button id="btn-lock-manual" class="lock-manual-btn" title="Kunci Kembali ke Slime Game" aria-label="Lock app">🔐</button>
+          <span id="vault-sync-indicator" class="sync-dot idle" title="Cloud Sync: Siap"></span>
+          <button id="btn-lock-manual" class="lock-manual-btn" title="Kunci Kembali ke Ruang Kerja Normal" aria-label="Lock app">🔐</button>
           <button id="panic-indicator" class="panic-btn" title="Double-tap header to panic camouflage" aria-label="Panic switch">
             <span class="panic-pulse"></span>
             🛡️
@@ -355,6 +359,62 @@
             <button class="btn-secondary" id="btn-cancel-cat">Batal</button>
             <button class="btn-primary" id="btn-save-cat">Simpan Kategori</button>
           </div>
+        </div>
+
+        <!-- Compact Active Quest Card -->
+        <div id="active-quest-card" class="card active-quest-card">
+          <div class="active-quest-header">
+            <div class="quest-title-wrap">
+              <span class="quest-badge">🎯 ACTIVE QUEST</span>
+              <span id="active-quest-status-badge" class="quest-status status-pending">Pending</span>
+            </div>
+            <button id="btn-edit-active-quest" class="btn-quest-action" title="Edit Quest">✎</button>
+          </div>
+          
+          <div id="active-quest-view" class="active-quest-body">
+            <h4 id="active-quest-title" class="quest-title">Tidak ada Quest aktif</h4>
+            <div class="quest-meta">
+              <span id="active-quest-preset" class="quest-meta-item">🔗 Tanpa Preset</span>
+              <span id="active-quest-deadline" class="quest-meta-item">⏰ Tanpa Batas Waktu</span>
+            </div>
+            <div class="quest-status-buttons" id="quest-status-controls">
+              <button type="button" class="btn-quest-status active" data-status="Pending">Pending</button>
+              <button type="button" class="btn-quest-status" data-status="Accepted">Accepted</button>
+              <button type="button" class="btn-quest-status" data-status="Completed">Completed</button>
+            </div>
+          </div>
+
+          <!-- Edit Quest Inline Form -->
+          <form id="active-quest-form" class="active-quest-form" style="display: none;">
+            <div class="form-row">
+              <label class="field-label">Deskripsi / Judul Quest:</label>
+              <input type="text" id="input-quest-title" class="input-field" placeholder="Target / tantangan aktif saat ini..." maxlength="120">
+            </div>
+            <div class="form-grid-2">
+              <div>
+                <label class="field-label">Tautkan Preset (Opsional):</label>
+                <select id="select-quest-preset" class="input-field">
+                  <option value="">-- Tanpa Preset --</option>
+                </select>
+              </div>
+              <div>
+                <label class="field-label">Batas Waktu (Opsional):</label>
+                <input type="datetime-local" id="input-quest-due" class="input-field">
+              </div>
+            </div>
+            <div class="form-row">
+              <label class="field-label">Status:</label>
+              <select id="select-quest-status" class="input-field">
+                <option value="Pending">Pending</option>
+                <option value="Accepted">Accepted</option>
+                <option value="Completed">Completed</option>
+              </select>
+            </div>
+            <div class="form-actions">
+              <button type="button" class="btn-secondary" id="btn-cancel-quest">Tutup</button>
+              <button type="button" class="btn-primary" id="btn-save-quest">Simpan Quest</button>
+            </div>
+          </form>
         </div>
 
         <!-- Container Kategori Dinamis -->
@@ -711,6 +771,14 @@
             </div>
           </div>
 
+          <div class="form-row auto-sync-row">
+            <label class="toggle-label" for="gh-autosync">
+              <input type="checkbox" id="gh-autosync" checked>
+              <span class="toggle-text">🔄 Silent Cloud Auto-Sync (Sinkronisasi Otomatis)</span>
+            </label>
+            <small class="field-help">Sinkronisasi otomatis di latar belakang saat brankas dibuka dan saat data diperbarui.</small>
+          </div>
+
           <div class="backup-actions-grid">
             <button class="btn-primary" id="btn-backup-github">
               <span>🚀 Backup Sekarang (Siluman)</span>
@@ -814,6 +882,50 @@
           <span class="longpress-text">Tahan 3 Detik untuk Mengakui Kekalahan</span>
         </button>
         <small class="longpress-hint">Tekan &amp; jangan lepas selama 3 detik untuk menutup</small>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Rename Public Category -->
+  <div id="modal-edit-normal-category" class="modal-overlay">
+    <div class="modal-card">
+      <h3 class="modal-title">✎ Ubah Nama Kategori</h3>
+      <div class="form-row">
+        <label class="field-label">Nama Kategori Baru:</label>
+        <input type="text" id="modal-input-normal-cat-name" class="input-field" placeholder="Nama kategori..." maxlength="50">
+        <input type="hidden" id="modal-hidden-normal-cat-id">
+      </div>
+      <div class="form-actions">
+        <button type="button" class="btn-secondary" id="modal-btn-cancel-normal-cat">Batal</button>
+        <button type="button" class="btn-primary" id="modal-btn-save-normal-cat">Simpan Perubahan</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Edit Public Task Item -->
+  <div id="modal-edit-normal-task" class="modal-overlay">
+    <div class="modal-card">
+      <h3 class="modal-title">✎ Edit Tugas</h3>
+      <div class="form-row">
+        <label class="field-label">Deskripsi Tugas:</label>
+        <input type="text" id="modal-input-normal-task-text" class="input-field" placeholder="Nama tugas..." maxlength="80">
+        <input type="hidden" id="modal-hidden-normal-task-cat-id">
+        <input type="hidden" id="modal-hidden-normal-task-item-id">
+      </div>
+      <div class="form-row">
+        <label class="field-label">Kategori / List Group:</label>
+        <select id="modal-select-normal-task-category" class="input-field"></select>
+      </div>
+      <div class="form-row">
+        <label class="field-label">Jam Pengingat (HH:MM):</label>
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <input type="time" id="modal-input-normal-task-time" class="input-field" style="flex: 1;">
+          <button type="button" id="modal-btn-clear-normal-task-time" class="btn-clear-time" title="Hapus Pengingat">✕ Hapus</button>
+        </div>
+      </div>
+      <div class="form-actions">
+        <button type="button" class="btn-secondary" id="modal-btn-cancel-normal-task">Batal</button>
+        <button type="button" class="btn-primary" id="modal-btn-save-normal-task">Simpan Perubahan</button>
       </div>
     </div>
   </div>
